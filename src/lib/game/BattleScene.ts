@@ -25,8 +25,21 @@ const PLAYER_SCALE = 0.3;
 const ENEMY_SCALE = 0.36;
 const PROJECTILE_SCALE = 0.28;
 const PROJECTILE_CORE_OFFSET = vec(72, 0);
+const METEOR_SCALE = 0.52;
+const METEOR_START_POSITION = vec(PLAYER_POSITION.x, -340);
+const METEOR_LAND_POSITION = vec(PLAYER_POSITION.x, 918);
+const PLAYER_METEOR_IMPACT_POINT = vec(PLAYER_POSITION.x, 765);
 
-type BattlePhase = 'idle' | 'charge' | 'flight' | 'impact' | 'recover';
+type BattlePhase =
+	| 'idle'
+	| 'charge'
+	| 'flight'
+	| 'impact'
+	| 'recover'
+	| 'enemyCharge'
+	| 'meteorFall'
+	| 'meteorImpact'
+	| 'enemyRecover';
 
 export class BattleScene extends Scene {
 	private readonly resources: BattleResources;
@@ -36,6 +49,7 @@ export class BattleScene extends Scene {
 	private player!: Actor;
 	private enemy!: Actor;
 	private projectile!: Actor;
+	private meteor!: Actor;
 	private castGlow!: Actor;
 	private castAura!: Actor;
 	private groundGlow!: Actor;
@@ -43,10 +57,18 @@ export class BattleScene extends Scene {
 	private impactCore!: Actor;
 	private damageLabel!: Label;
 	private sceneTint!: Actor;
+	private enemyGroundGlow!: Actor;
+	private enemyCastAura!: Actor;
+	private enemyCastGlow!: Actor;
+	private meteorGroundGlow!: Actor;
+	private meteorImpactGlow!: Actor;
+	private meteorImpactCore!: Actor;
+	private meteorTint!: Actor;
 	private blastOuter!: Actor;
 	private blastInner!: Actor;
 	private blastMotes: Actor[] = [];
 	private sparks: Actor[] = [];
+	private meteorSparks: Actor[] = [];
 
 	public constructor(resources: BattleResources, setStatus: (status: string) => void) {
 		super();
@@ -55,6 +77,11 @@ export class BattleScene extends Scene {
 	}
 
 	public handleKey(code: string) {
+		if (this.phase !== 'idle') {
+			this.setStatus(this.isDemonTurn() ? 'Demon turn in progress' : 'Attack sequence in progress');
+			return;
+		}
+
 		if (code === 'ArrowRight') {
 			this.startMediumAttack();
 			return;
@@ -99,6 +126,18 @@ export class BattleScene extends Scene {
 				break;
 			case 'recover':
 				this.updateRecovery();
+				break;
+			case 'enemyCharge':
+				this.updateEnemyCharge();
+				break;
+			case 'meteorFall':
+				this.updateMeteorFall();
+				break;
+			case 'meteorImpact':
+				this.updateMeteorImpact(engine);
+				break;
+			case 'enemyRecover':
+				this.updateEnemyRecovery();
 				break;
 		}
 	}
@@ -149,7 +188,9 @@ export class BattleScene extends Scene {
 		this.add(this.player);
 
 		this.enemy = new Actor({ pos: ENEMY_POSITION, anchor: vec(0.5, 1), z: 9 });
-		this.enemy.graphics.use(this.resources.enemyIdle.toSprite());
+		this.enemy.graphics.add('idle', this.resources.enemyIdle.toSprite());
+		this.enemy.graphics.add('charge', this.resources.enemyChargeMedium.toSprite());
+		this.enemy.graphics.use('idle');
 		this.enemy.scale = vec(ENEMY_SCALE, ENEMY_SCALE);
 		this.add(this.enemy);
 
@@ -158,6 +199,12 @@ export class BattleScene extends Scene {
 		this.projectile.scale = vec(PROJECTILE_SCALE, PROJECTILE_SCALE);
 		this.projectile.graphics.opacity = 0;
 		this.add(this.projectile);
+
+		this.meteor = new Actor({ pos: METEOR_START_POSITION, anchor: vec(0.5, 1), z: 18 });
+		this.meteor.graphics.use(this.resources.meteor.toSprite());
+		this.meteor.scale = vec(METEOR_SCALE, METEOR_SCALE);
+		this.meteor.graphics.opacity = 0;
+		this.add(this.meteor);
 	}
 
 	private addEffects() {
@@ -178,6 +225,34 @@ export class BattleScene extends Scene {
 		this.castGlow = this.createCircle(PLAYER_CAST_POINT, 38, new Color(238, 216, 255, 0.95), 13);
 		this.castGlow.graphics.opacity = 0;
 		this.add(this.castGlow);
+
+		this.enemyGroundGlow = this.createCircle(
+			ENEMY_POSITION.add(vec(-45, -24)),
+			165,
+			new Color(231, 45, 24, 0.38),
+			5,
+		);
+		this.enemyGroundGlow.scale = vec(1.5, 0.18);
+		this.enemyGroundGlow.graphics.opacity = 0;
+		this.add(this.enemyGroundGlow);
+
+		this.enemyCastAura = this.createCircle(
+			ENEMY_POSITION.add(vec(-175, -315)),
+			125,
+			new Color(232, 44, 24, 0.23),
+			12,
+		);
+		this.enemyCastAura.graphics.opacity = 0;
+		this.add(this.enemyCastAura);
+
+		this.enemyCastGlow = this.createCircle(
+			ENEMY_POSITION.add(vec(-175, -315)),
+			42,
+			new Color(255, 235, 207, 0.95),
+			13,
+		);
+		this.enemyCastGlow.graphics.opacity = 0;
+		this.add(this.enemyCastGlow);
 
 		this.blastOuter = this.createCircle(PLAYER_CAST_POINT, 72, new Color(123, 55, 255, 0.45), 15);
 		this.blastOuter.graphics.opacity = 0;
@@ -202,6 +277,46 @@ export class BattleScene extends Scene {
 		this.impactCore.graphics.opacity = 0;
 		this.add(this.impactCore);
 
+		this.meteorGroundGlow = this.createCircle(
+			PLAYER_METEOR_IMPACT_POINT,
+			180,
+			new Color(255, 78, 23, 0.6),
+			20,
+		);
+		this.meteorGroundGlow.scale = vec(1.8, 0.2);
+		this.meteorGroundGlow.graphics.opacity = 0;
+		this.add(this.meteorGroundGlow);
+
+		this.meteorImpactGlow = this.createCircle(
+			PLAYER_METEOR_IMPACT_POINT,
+			260,
+			new Color(255, 78, 23, 0.72),
+			22,
+		);
+		this.meteorImpactGlow.graphics.opacity = 0;
+		this.add(this.meteorImpactGlow);
+
+		this.meteorImpactCore = this.createCircle(
+			PLAYER_METEOR_IMPACT_POINT,
+			80,
+			new Color(255, 240, 198, 1),
+			23,
+		);
+		this.meteorImpactCore.graphics.opacity = 0;
+		this.add(this.meteorImpactCore);
+
+		this.meteorTint = new Actor({
+			pos: BATTLE_CENTER,
+			width: ARENA_WIDTH,
+			height: ARENA_HEIGHT,
+			color: new Color(227, 49, 18, 0.2),
+			anchor: vec(0.5, 0.5),
+			z: 4,
+		});
+		this.meteorTint.scale = vec(BACKDROP_SCALE, BACKDROP_SCALE);
+		this.meteorTint.graphics.opacity = 0;
+		this.add(this.meteorTint);
+
 		this.damageLabel = new Label({
 			text: '25',
 			pos: ENEMY_HIT_POINT.add(vec(0, -35)),
@@ -222,6 +337,18 @@ export class BattleScene extends Scene {
 			const spark = this.createCircle(ENEMY_HIT_POINT, 8, new Color(224, 187, 255, 0.9), 19);
 			spark.graphics.opacity = 0;
 			this.sparks.push(spark);
+			this.add(spark);
+		}
+
+		for (let index = 0; index < 16; index += 1) {
+			const spark = this.createCircle(
+				PLAYER_METEOR_IMPACT_POINT,
+				11,
+				new Color(255, 182, 70, 0.95),
+				21,
+			);
+			spark.graphics.opacity = 0;
+			this.meteorSparks.push(spark);
 			this.add(spark);
 		}
 	}
@@ -303,6 +430,7 @@ export class BattleScene extends Scene {
 		this.hideBlast();
 		this.impactGlow.graphics.opacity = 1;
 		this.impactCore.graphics.opacity = 1;
+		this.damageLabel.text = '25';
 		this.damageLabel.pos = ENEMY_HIT_POINT.add(vec(0, -35));
 		this.damageLabel.opacity = 1;
 		this.setStatus('Medium Attack hit for 25');
@@ -353,11 +481,127 @@ export class BattleScene extends Scene {
 		this.enemy.pos = lerpVector(ENEMY_POSITION.add(vec(-4, 0)), ENEMY_POSITION, progress);
 
 		if (progress === 1) {
+			this.player.graphics.use('idle');
+			this.startDemonTurn();
+		}
+	}
+
+	private startDemonTurn() {
+		this.phase = 'enemyCharge';
+		this.phaseElapsed = 0;
+		this.enemy.graphics.use('charge');
+		this.setStatus('Demon turn: summoning meteor');
+	}
+
+	private updateEnemyCharge() {
+		const progress = clamp(this.phaseElapsed / 780, 0, 1);
+		const pulse = 1 + Math.sin(this.phaseElapsed / 58) * 0.09;
+		this.enemy.scale = vec(ENEMY_SCALE * (1 + progress * 0.1), ENEMY_SCALE * (1 + progress * 0.1));
+		this.enemyGroundGlow.graphics.opacity = progress * 0.9;
+		this.enemyCastAura.scale = vec(pulse * (0.5 + progress * 1.1), pulse * (0.5 + progress * 1.1));
+		this.enemyCastAura.graphics.opacity = progress * 0.85;
+		this.enemyCastGlow.scale = vec(pulse * (0.6 + progress * 0.8), pulse * (0.6 + progress * 0.8));
+		this.enemyCastGlow.graphics.opacity = 0.75 + Math.sin(this.phaseElapsed / 48) * 0.2;
+		this.meteorTint.graphics.opacity = progress * 0.34;
+
+		if (progress === 1) {
+			this.phase = 'meteorFall';
+			this.phaseElapsed = 0;
+			this.meteor.pos = METEOR_START_POSITION;
+			this.meteor.graphics.opacity = 1;
+			this.setStatus('Meteor incoming');
+		}
+	}
+
+	private updateMeteorFall() {
+		const progress = clamp(this.phaseElapsed / 1300, 0, 1);
+		const fallProgress = progress * progress;
+		this.meteor.pos = lerpVector(METEOR_START_POSITION, METEOR_LAND_POSITION, fallProgress);
+		this.meteor.scale = vec(
+			METEOR_SCALE * (0.72 + progress * 0.28),
+			METEOR_SCALE * (0.72 + progress * 0.28),
+		);
+		this.enemyGroundGlow.graphics.opacity = (1 - progress) * 0.85;
+		this.enemyCastAura.graphics.opacity = (1 - progress) * 0.8;
+		this.enemyCastGlow.graphics.opacity = (1 - progress) * 0.9;
+		this.meteorTint.graphics.opacity = 0.34 + progress * 0.16;
+
+		if (progress === 1) {
+			this.beginMeteorImpact();
+		}
+	}
+
+	private beginMeteorImpact() {
+		this.phase = 'meteorImpact';
+		this.phaseElapsed = 0;
+		this.meteor.graphics.opacity = 0;
+		this.meteorGroundGlow.graphics.opacity = 1;
+		this.meteorImpactGlow.graphics.opacity = 1;
+		this.meteorImpactCore.graphics.opacity = 1;
+		this.damageLabel.text = '50';
+		this.damageLabel.pos = PLAYER_METEOR_IMPACT_POINT.add(vec(0, -80));
+		this.damageLabel.opacity = 1;
+		this.setStatus('Meteor impact for 50');
+
+		this.meteorSparks.forEach((spark, index) => {
+			const angle = (Math.PI * 2 * index) / this.meteorSparks.length;
+			const speed = 280 + (index % 4) * 55;
+			spark.pos = PLAYER_METEOR_IMPACT_POINT;
+			spark.vel = vec(Math.cos(angle) * speed, Math.sin(angle) * speed - 90);
+			spark.graphics.opacity = 1;
+		});
+	}
+
+	private updateMeteorImpact(engine: Engine) {
+		const progress = clamp(this.phaseElapsed / 680, 0, 1);
+		this.meteorGroundGlow.scale = vec(1.2 + progress * 2.1, 0.16 + progress * 0.16);
+		this.meteorGroundGlow.graphics.opacity = 1 - progress;
+		this.meteorImpactGlow.scale = vec(0.35 + progress * 1.8, 0.35 + progress * 1.8);
+		this.meteorImpactGlow.graphics.opacity = 1 - progress;
+		this.meteorImpactCore.scale = vec(0.8 + progress * 2.3, 0.8 + progress * 2.3);
+		this.meteorImpactCore.graphics.opacity = 1 - progress;
+		this.player.pos = PLAYER_POSITION.add(vec(30 * (1 - progress), 0));
+		this.player.graphics.opacity = progress < 0.25 ? 0.34 : 1;
+		this.damageLabel.pos = PLAYER_METEOR_IMPACT_POINT.add(vec(0, -80 - progress * 100));
+		this.damageLabel.opacity = 1 - progress;
+		this.meteorSparks.forEach((spark) => {
+			spark.graphics.opacity = Math.max(0, 1 - progress * 1.3);
+		});
+		this.meteorTint.graphics.opacity = (1 - progress) * 0.5;
+
+		if (this.phaseElapsed < 25) {
+			engine.currentScene.camera.shake(34, 24, 520);
+		}
+
+		if (progress === 1) {
+			this.meteorSparks.forEach((spark) => {
+				spark.vel = Vector.Zero;
+				spark.graphics.opacity = 0;
+			});
+			this.phase = 'enemyRecover';
+			this.phaseElapsed = 0;
+		}
+	}
+
+	private updateEnemyRecovery() {
+		const progress = clamp(this.phaseElapsed / 520, 0, 1);
+		this.enemy.scale = vec(
+			ENEMY_SCALE * (1.1 - progress * 0.1),
+			ENEMY_SCALE * (1.1 - progress * 0.1),
+		);
+		this.player.pos = lerpVector(PLAYER_POSITION.add(vec(4, 0)), PLAYER_POSITION, progress);
+
+		if (progress === 1) {
+			this.enemy.graphics.use('idle');
+			this.player.graphics.opacity = 1;
 			this.phase = 'idle';
 			this.phaseElapsed = 0;
-			this.player.graphics.use('idle');
 			this.setStatus('Ready: press Right Arrow to cast Medium Attack');
 		}
+	}
+
+	private isDemonTurn() {
+		return ['enemyCharge', 'meteorFall', 'meteorImpact', 'enemyRecover'].includes(this.phase);
 	}
 
 	private createCircle(position: Vector, radius: number, color: Color, z: number) {

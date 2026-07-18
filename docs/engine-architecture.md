@@ -73,6 +73,7 @@ Owns the current battle presentation:
 - Player and enemy mage actors.
 - Ground shadows, spell tints, casting glow, impact glow, damage label, and sparks.
 - Player cast, projectile, impact, and recovery sequence.
+- Demon charge, meteor fall, impact, and recovery sequence.
 
 It must not create wallet clients or call contracts.
 
@@ -97,7 +98,7 @@ Use a dedicated actor when the element needs a position, lifecycle, action queue
 
 ### Actions
 
-Version 1 uses a small elapsed-time presentation state machine because its sole move has fixed visual beats and no gameplay rules. The scene resets all temporary state before accepting the next cast. Future combat resolution should remain separate from this choreography.
+Version 1 uses a small elapsed-time presentation state machine because its visual beats have fixed timing and no gameplay rules. The player medium sequence explicitly transitions to the demon meteor turn, which keeps player input locked until the demon recovery returns to idle. Future combat resolution should select these named transitions rather than entangling rule checks with rendering code.
 
 ### Parallel Effects
 

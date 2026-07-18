@@ -14,6 +14,7 @@ Version 1 is a local visual test for the 2.5D battle presentation. It deliberate
 - The upper HUD includes a Fullscreen button that enters browser fullscreen for the battle stage.
 - Inputs are ignored while the medium sequence is active.
 - The hit presents a floating 25 damage label and no health or defeat rule.
+- After the player recovers, the demon automatically charges and drops a meteor on the player for a presentation-only 50 damage hit.
 
 ## Scene Timeline
 
@@ -23,7 +24,8 @@ Version 1 is a local visual test for the 2.5D battle presentation. It deliberate
 4. The medium projectile launches from the player cast anchor as a layered plasma blast with an inner beam, outer ribbon, and trailing motes.
 5. The projectile reaches the enemy hit anchor.
 6. Enemy recoil, impact flash, sparks, 25 damage label, and camera shake play together.
-7. The scene restores position, opacity, scale, tint, camera, and idle art before accepting another cast.
+7. The demon charges, the meteor falls from above, then disappears on impact as a procedural orange explosion, player recoil, 50 damage label, and heavy camera shake play together.
+8. The scene restores position, opacity, scale, tint, camera, and idle art before accepting another cast.
 
 ## Runtime Objects
 

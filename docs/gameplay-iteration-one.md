@@ -12,12 +12,12 @@ The purpose is to approve the rendering direction locally before adding game rul
 - Presentation: 2.5D using 2D layered assets.
 - Arena: one fixed combat scene.
 - Actors: one player mage and one enemy mage.
-- Primary cinematic event: player medium cast, left-to-right projectile, enemy recoil, 25 damage display, recovery.
+- Primary cinematic event: player medium cast, left-to-right projectile, enemy recoil, 25 damage display, then an automatic demon meteor counterattack for 50 damage.
 - UI boundary: SvelteKit HTML UI above the game canvas.
 - Blockchain boundary: no blockchain work in this iteration.
 - Canvas: responsive 16:9 presentation with a native 1672x941 arena render size.
 - Input: ArrowRight activates medium attack. ArrowUp, ArrowDown, and ArrowLeft report unavailable moves.
-- Re-entry: the scene ignores casts while an attack is active.
+- Re-entry: the scene ignores casts while either the player or demon sequence is active.
 
 ## Not Yet Defined
 

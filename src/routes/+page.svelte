@@ -62,6 +62,8 @@
 	<link rel="preload" as="image" href="/mage%20wand%20cast_no_bg.png" />
 	<link rel="preload" as="image" href="/Mage%20medium%20att_no_bg.png" />
 	<link rel="preload" as="image" href="/enemy%20idle_no_bg.png" />
+	<link rel="preload" as="image" href="/enemy%20charge%20medium_no_bg.png" />
+	<link rel="preload" as="image" href="/transparent%20meteor.png" />
 </svelte:head>
 
 <main>

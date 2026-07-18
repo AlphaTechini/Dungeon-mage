@@ -6,6 +6,8 @@ export const resources = {
 	playerCast: new ImageSource('/mage wand cast_no_bg.png'),
 	playerMediumProjectile: new ImageSource('/Mage medium att_no_bg.png'),
 	enemyIdle: new ImageSource('/enemy idle_no_bg.png'),
+	enemyChargeMedium: new ImageSource('/enemy charge medium_no_bg.png'),
+	meteor: new ImageSource('/transparent meteor.png'),
 };
 
 export type BattleResources = typeof resources;
