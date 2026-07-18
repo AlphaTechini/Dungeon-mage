@@ -1,0 +1,9 @@
+.svelte-kit/
+build/
+node_modules/
+.vercel/
+coverage/
+*.log
+.env
+.env.*
+!.env.example

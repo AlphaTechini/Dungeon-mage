@@ -1,0 +1,17 @@
+# Local Battle Runtime
+
+This directory contains the Version 1 Excalibur scene. It has no wallet, server, or blockchain dependency.
+
+## Decisions
+
+The engine renders at the arena image's native 1672x941 resolution. CSS scales the canvas into an aspect-ratio-preserving frame. The battle scene uses a deterministic visual-state sequence rather than combat rules so timing can be tuned without adding game logic prematurely.
+
+## Logic Map
+
+To find asset loading and semantic asset names visit [resources.ts](file:///C:/game-hackathons/Expedition%2033-DN/src/lib/game/resources.ts).
+
+To find the player cast, projectile, impact, and input sequence visit [BattleScene.ts](file:///C:/game-hackathons/Expedition%2033-DN/src/lib/game/BattleScene.ts).
+
+To find engine mounting and cleanup visit [createGame.ts](file:///C:/game-hackathons/Expedition%2033-DN/src/lib/game/createGame.ts).
+
+The Excalibur canvas connection can be found in [createGame.ts](file:///C:/game-hackathons/Expedition%2033-DN/src/lib/game/createGame.ts).

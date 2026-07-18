@@ -10,20 +10,20 @@ Mainnet is likely required only when the product needs real economic value or pr
 
 ## Capability Matrix
 
-| Capability | Testnet-only status | Mainnet requirement |
-| --- | --- | --- |
-| Phaser gameplay and UI | Fully testable locally and in a web build | None for the game itself |
-| Magic email or social login | Testable with Magic configured for Arbitrum Sepolia | Production API configuration is needed for launch, not for the flow demo |
-| Existing wallet login | Testable with EIP-1193 or WalletConnect on Arbitrum Sepolia | Production wallet support and account-linking validation remain |
-| Kernel smart-account creation | Testable on supported ZeroDev testnet projects | Production project and network configuration for launch |
-| Gas sponsorship | Testable if the ZeroDev testnet project has a usable paymaster policy | Production paymaster funding, policy, quotas, and monitoring |
-| Session permissions and spending limits | Fully testable with test assets and scoped policies | Production security review and real-value policy limits |
-| In-game purchases | Fully testable with a test ERC-20 and local marketplace contracts | Mainnet only for real items, real balances, and real liquidity |
-| Batched settlement | Fully testable through UserOperations on Arbitrum Sepolia | Mainnet only for production settlement and final economic value |
-| Post-session transaction labels and explorer links | Fully testable with Arbitrum Sepolia receipts | Mainnet explorer links for live users |
-| Chain-abstracted balances | Technically testable only on supported ZeroDev testnet routes; reliability is not guaranteed | Recommended for credible production cross-chain behavior |
-| Fiat on-ramp | Not a dependable testnet-only requirement | Real payment rails and supported production networks are required |
-| Real marketplace or reward economy | Not meaningfully testable with real value | Mainnet liquidity and production asset contracts are required |
+| Capability                                         | Testnet-only status                                                                          | Mainnet requirement                                                      |
+| -------------------------------------------------- | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| Phaser gameplay and UI                             | Fully testable locally and in a web build                                                    | None for the game itself                                                 |
+| Magic email or social login                        | Testable with Magic configured for Arbitrum Sepolia                                          | Production API configuration is needed for launch, not for the flow demo |
+| Existing wallet login                              | Testable with EIP-1193 or WalletConnect on Arbitrum Sepolia                                  | Production wallet support and account-linking validation remain          |
+| Kernel smart-account creation                      | Testable on supported ZeroDev testnet projects                                               | Production project and network configuration for launch                  |
+| Gas sponsorship                                    | Testable if the ZeroDev testnet project has a usable paymaster policy                        | Production paymaster funding, policy, quotas, and monitoring             |
+| Session permissions and spending limits            | Fully testable with test assets and scoped policies                                          | Production security review and real-value policy limits                  |
+| In-game purchases                                  | Fully testable with a test ERC-20 and local marketplace contracts                            | Mainnet only for real items, real balances, and real liquidity           |
+| Batched settlement                                 | Fully testable through UserOperations on Arbitrum Sepolia                                    | Mainnet only for production settlement and final economic value          |
+| Post-session transaction labels and explorer links | Fully testable with Arbitrum Sepolia receipts                                                | Mainnet explorer links for live users                                    |
+| Chain-abstracted balances                          | Technically testable only on supported ZeroDev testnet routes; reliability is not guaranteed | Recommended for credible production cross-chain behavior                 |
+| Fiat on-ramp                                       | Not a dependable testnet-only requirement                                                    | Real payment rails and supported production networks are required        |
+| Real marketplace or reward economy                 | Not meaningfully testable with real value                                                    | Mainnet liquidity and production asset contracts are required            |
 
 ## What Can Be Done on Testnet
 

@@ -23,13 +23,13 @@ This is ten primary poses before effects, UI portraits, or alternate skins. Each
 
 ## Asset Options
 
-| Option | Output | Complexity | Recommendation |
-| --- | --- | --- | --- |
-| Authored transparent illustrations | PNG/WebP poses | Low | Recommended for the demo |
-| Generated concept art plus manual cleanup | PNG/WebP poses | Low to moderate | Good if visual consistency is maintained |
-| 2D skeletal animation | Rig plus mesh or sprite attachments | Moderate to high | Defer until more motion is needed |
-| Blender-rendered 3D poses | Rendered transparent PNGs | High | Useful only if a 3D art pipeline already exists |
-| Runtime procedural characters | Vector or generated shapes | Moderate engineering, weak visual identity | Use only for placeholders |
+| Option                                    | Output                              | Complexity                                 | Recommendation                                  |
+| ----------------------------------------- | ----------------------------------- | ------------------------------------------ | ----------------------------------------------- |
+| Authored transparent illustrations        | PNG/WebP poses                      | Low                                        | Recommended for the demo                        |
+| Generated concept art plus manual cleanup | PNG/WebP poses                      | Low to moderate                            | Good if visual consistency is maintained        |
+| 2D skeletal animation                     | Rig plus mesh or sprite attachments | Moderate to high                           | Defer until more motion is needed               |
+| Blender-rendered 3D poses                 | Rendered transparent PNGs           | High                                       | Useful only if a 3D art pipeline already exists |
+| Runtime procedural characters             | Vector or generated shapes          | Moderate engineering, weak visual identity | Use only for placeholders                       |
 
 The recommended output is a small set of transparent raster images. The game does not need a character creator, runtime mesh deformation, or a 3D rig for the pitch.
 
@@ -113,13 +113,13 @@ For one fixed combat scene, these costs are not justified yet.
 
 ## Environment Options
 
-| Environment approach | Complexity | Best use |
-| --- | --- | --- |
-| One background image and fixed spawn points | Low | Pitch demo |
-| Layered background images and Phaser containers | Low to moderate | Parallax and visual depth |
-| Tiled JSON map | Moderate | Reusable arenas and collision |
-| Procedural environment generation | High | Many maps or repeatable worlds |
-| 3D Blender or PlayCanvas environment | Very high | Deliberate 3D game direction |
+| Environment approach                            | Complexity      | Best use                       |
+| ----------------------------------------------- | --------------- | ------------------------------ |
+| One background image and fixed spawn points     | Low             | Pitch demo                     |
+| Layered background images and Phaser containers | Low to moderate | Parallax and visual depth      |
+| Tiled JSON map                                  | Moderate        | Reusable arenas and collision  |
+| Procedural environment generation               | High            | Many maps or repeatable worlds |
+| 3D Blender or PlayCanvas environment            | Very high       | Deliberate 3D game direction   |
 
 ## Game Chassis Complexity
 

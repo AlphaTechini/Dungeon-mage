@@ -46,13 +46,13 @@ Those tools should live outside the browser application, for example under `tool
 
 ## Runtime Alternatives
 
-| Approach | Benefit | Cost | Recommendation |
-| --- | --- | --- | --- |
-| TypeScript plus Phaser | One browser runtime, typed Web3 boundary, matches guide | Requires learning TypeScript types | Recommended |
-| JavaScript plus Phaser | Fastest start and matches examples | More runtime mistakes at integration boundaries | Acceptable fallback |
-| Python through Pyodide | Reuses Python skills in the browser | Large integration and runtime complexity | Do not use for this demo |
-| Python backend plus JavaScript client | Good for authoritative server systems | Requires server, API, state sync, and deployment | Not needed for single-player demo |
-| Pygame or another desktop Python engine | Familiar Python game programming | Does not match browser and wallet architecture | Not suitable |
+| Approach                                | Benefit                                                 | Cost                                             | Recommendation                    |
+| --------------------------------------- | ------------------------------------------------------- | ------------------------------------------------ | --------------------------------- |
+| TypeScript plus Phaser                  | One browser runtime, typed Web3 boundary, matches guide | Requires learning TypeScript types               | Recommended                       |
+| JavaScript plus Phaser                  | Fastest start and matches examples                      | More runtime mistakes at integration boundaries  | Acceptable fallback               |
+| Python through Pyodide                  | Reuses Python skills in the browser                     | Large integration and runtime complexity         | Do not use for this demo          |
+| Python backend plus JavaScript client   | Good for authoritative server systems                   | Requires server, API, state sync, and deployment | Not needed for single-player demo |
+| Pygame or another desktop Python engine | Familiar Python game programming                        | Does not match browser and wallet architecture   | Not suitable                      |
 
 ## Recommended Language Boundary
 

@@ -59,6 +59,70 @@ Arbitrum contracts can be written in Solidity using the normal EVM toolchain. St
 
 Phaser is a browser game framework using JavaScript or TypeScript. The official templates make TypeScript and Vite a practical starting point for this project, while the game can remain separate from the wallet and settlement integration at the application boundary.
 
+## Excalibur.js
+
+Excalibur.js is the selected 2D game engine for the current implementation direction. It is TypeScript-first, browser-based, and provides the engine, scene, actor, graphics, animation, input, resource-loading, and event systems needed by the combat demo.
+
+### Core engine and setup
+
+- [Excalibur.js home](https://excaliburjs.com) - Official project site, tutorials, API reference, examples, and community links.
+- [Installation](https://excaliburjs.com/docs/installation) - Supported installation paths, npm usage, vanilla JavaScript setup, templates, and CLI entry points.
+- [Build and bundlers](https://excaliburjs.com/docs/bundlers) - TypeScript and JavaScript imports, bundling, project structure, and build guidance.
+- [Engine fundamentals](https://excaliburjs.com/docs/engine) - Engine creation, startup, loaders, scene graph, main loop, and scene activation.
+- [Engine API](https://excaliburjs.com/api/class/Engine) - Engine lifecycle, input toggles, loader configuration, fixed update settings, and coordinate conversion.
+- [TypeScript and Vite template](https://github.com/excaliburjs/template-ts-vite) - Official Excalibur starter template for TypeScript and Vite.
+
+### Actors, scenes, and communication
+
+- [Actors](https://excaliburjs.com/docs/actors) - Actor graphics, lifecycle, anchors, and actor initialization.
+- [Actor API](https://excaliburjs.com/api/class/Actor) - Actor position, velocity, graphics, collision, z-order, and lifecycle API.
+- [Scene API](https://excaliburjs.com/api/class/Scene) - Scene loading, initialization, update and draw lifecycle, and scene-specific resources.
+- [Events](https://excaliburjs.com/docs/events) - Strongly typed event listeners for actors, scenes, engines, actions, animations, and components.
+- [Actions](https://excaliburjs.com/docs/actions/) - Queued actor actions for movement, delay, fade, rotation, scaling, callbacks, and cleanup.
+- [Actions primer](https://excaliburjs.com/docs/actions-primer/) - Deterministic action sequencing, composition, and lifecycle model.
+- [Sequences and parallel actions](https://excaliburjs.com/docs/sequences-and-parallel) - Composes concurrent visual changes while preserving a readable sequence.
+- [Cameras](https://excaliburjs.com/docs/cameras) - Camera position, focus, zoom, strategies, and shake for cinematic reframing.
+- [Camera API](https://excaliburjs.com/api/class/Camera) - Timed zoom and shake methods for scene-direction code.
+- [UI](https://excaliburjs.com/docs/ui) - HTML and CSS UI above the canvas, including input-scope considerations.
+
+The event documentation is especially relevant to the SvelteKit boundary. Excalibur can emit typed gameplay events such as a potion request or match completion, while the SvelteKit and Web3 layers handle wallet state and ZeroDev transactions outside the engine.
+
+### Assets, animation, and effects
+
+- [Loaders](https://excaliburjs.com/docs/loaders) - Image resources, scene-specific loading, sprite sheets, and loader startup.
+- [ImageSource](https://excaliburjs.com/docs/imagesource) - Loading images and constructing sprite sheets from image sources.
+- [Sprites](https://excaliburjs.com/docs/sprites) - Cropping source images, destination sizing, and sprite graphics.
+- [Graphics](https://excaliburjs.com/docs/graphics) - Sprite and raster graphics, anchors, transforms, tint, opacity, and drawing primitives.
+- [Animation](https://excaliburjs.com/docs/animation) - Frame durations, looping strategies, sprite-sheet animation, and animation events.
+- [Animation API](https://excaliburjs.com/api/class/Animation) - Programmatic animation creation from sprite sheets and frame coordinates.
+- [Graphics context](https://excaliburjs.com/docs/graphics-context) - Custom Canvas-style drawing before or after actor graphics.
+- [Pixel art](https://excaliburjs.com/docs/pixel-art) - Pixel-art filtering, antialiasing, scaling, and pixel-ratio configuration.
+- [Particles](https://excaliburjs.com/docs/particles/) - Particle emitters for spell trails, dust, fog, sparks, and impact debris.
+- [Aseprite integration example](https://github.com/excaliburjs/excalibur-aseprite) - Official plugin repository for importing Aseprite assets and animations.
+
+For the mage combat demo, the practical path is transparent PNG/WebP images or sprite sheets loaded through `ImageSource`, then mapped into Excalibur `Animation` graphics on `Actor` instances. Spell effects can use separate sprites, raster graphics, or custom graphics-context drawing.
+
+### Environments and maps
+
+- [TileMap](https://excaliburjs.com/docs/tilemap) - Built-in tile maps, tiles, layers, collision, and Tiled integration guidance.
+- [Tiled plugin](https://excaliburjs.com/docs/tiled-plugin) - Loads Tiled TMX/TMJ maps, tilesets, templates, object layers, and map properties.
+- [Isometric tile maps](https://excaliburjs.com/docs/isometric) - 2.5D map support, layer ordering, and isometric entities.
+- [Excalibur Tiled plugin repository](https://github.com/excaliburjs/excalibur-tiled) - Source and package reference for Tiled map support.
+- [Sprite Fusion plugin](https://excaliburjs.com/docs/spritefusion-plugin) - Alternative JSON-based map workflow with tile attributes and object data.
+
+The first combat demo can use one background image and fixed spawn positions. The Tiled plugin becomes useful when the game adds reusable arenas, collision shapes, map layers, or designer-authored object markers.
+
+### Recommended Excalibur reading order
+
+1. [Installation](https://excaliburjs.com/docs/installation)
+2. [Engine fundamentals](https://excaliburjs.com/docs/engine)
+3. [Actors](https://excaliburjs.com/docs/actors)
+4. [Scenes](https://excaliburjs.com/api/class/Scene)
+5. [Loaders](https://excaliburjs.com/docs/loaders)
+6. [Animation](https://excaliburjs.com/docs/animation)
+7. [Events](https://excaliburjs.com/docs/events)
+8. [Tiled plugin](https://excaliburjs.com/docs/tiled-plugin)
+
 ## ZeroDev
 
 ### Core account abstraction

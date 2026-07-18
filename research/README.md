@@ -14,7 +14,8 @@ This directory contains separate research documents for the game, asset pipeline
 ## Architectural Decisions
 
 - The browser game runtime should use JavaScript or TypeScript, not Python.
-- Phaser remains the default engine because the supplied Session Zero guide already targets Phaser 3 and SvelteKit.
+- Excalibur.js is the current engine selection because it provides a TypeScript-first 2D engine for the browser and matches the project's revised direction.
+- Phaser remains documented as the original engine in the supplied Session Zero guide and as a viable alternative.
 - Python is optional for offline asset processing only, not for gameplay execution.
 - Blockchain calls should remain at the application boundary. Combat simulation and rendering stay offchain.
 

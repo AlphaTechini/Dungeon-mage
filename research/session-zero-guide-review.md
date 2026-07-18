@@ -4,6 +4,8 @@
 
 [Session Zero Build Guide](file:///C:/game-hackathons/Expedition%2033-DN/session_zero_tools_guide.pdf)
 
+The source guide specifies Phaser 3. The current implementation direction replaces Phaser with Excalibur.js; the guide remains useful for the product flow, Web3 boundaries, contract sequence, and scope constraints.
+
 ## Product Shape
 
 The guide describes a browser-based mage-only, turn-based combat demo. Its UX proof is:
@@ -16,16 +18,16 @@ The guide describes a browser-based mage-only, turn-based combat demo. Its UX pr
 
 ## Tool Responsibilities
 
-| Tool | Responsibility |
-| --- | --- |
-| SvelteKit | App shell, routes, login, session approval, game shell, report |
-| Phaser 3 | Combat canvas, sprites, effects, attack timing, shield windows |
-| Magic | Google login, embedded wallet, provider |
-| ZeroDev | Kernel smart account, permissions, paymaster, batching |
-| Arbitrum Sepolia | Testnet contracts and transaction proof |
-| Solidity and Hardhat | Game contracts and deployment |
-| viem | EVM reads, UserOperations, and explorer links |
-| Tailwind CSS | Non-game interface styling |
+| Tool                 | Responsibility                                                 |
+| -------------------- | -------------------------------------------------------------- |
+| SvelteKit            | App shell, routes, login, session approval, game shell, report |
+| Phaser 3             | Combat canvas, sprites, effects, attack timing, shield windows |
+| Magic                | Google login, embedded wallet, provider                        |
+| ZeroDev              | Kernel smart account, permissions, paymaster, batching         |
+| Arbitrum Sepolia     | Testnet contracts and transaction proof                        |
+| Solidity and Hardhat | Game contracts and deployment                                  |
+| viem                 | EVM reads, UserOperations, and explorer links                  |
+| Tailwind CSS         | Non-game interface styling                                     |
 
 ## Runtime Flow
 

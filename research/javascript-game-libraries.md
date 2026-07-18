@@ -8,20 +8,20 @@ The game does not currently need 3D rendering, multiplayer synchronization, larg
 
 ## Summary
 
-Phaser is the best fit for the current project. The attached Session Zero guide already specifies Phaser 3, and Phaser provides the 2D game features required by the demo without requiring a second engine layer.
+Excalibur.js is the current engine selection. It provides a TypeScript-first 2D engine for the browser and supplies the engine, scene, actor, animation, resource, input, event, and map systems needed by the combat demo. Phaser remains a viable alternative because it is the engine specified by the attached Session Zero guide.
 
 ## Comparison
 
-| Library | Category | Strength | Cost for this project | Assessment |
-| --- | --- | --- | --- | --- |
-| Phaser 3 | Full 2D game framework | Scenes, animation, input, cameras, particles, tilemaps, Canvas/WebGL | Low | Recommended |
-| Excalibur.js | TypeScript-first 2D engine | Strong typed API, actors, scenes, events, physics | Moderate migration cost | Strong alternative |
-| PixiJS | 2D rendering engine | Fast sprites, filters, scene graph, WebGL/WebGPU | Must add game lifecycle, physics, scene rules, and many systems | Not preferred |
-| KAPLAY | Lightweight 2D game library | Fast prototyping and simple component-style game objects | Smaller ecosystem and different architecture from the guide | Good prototype alternative |
-| melonJS | Full 2D/2.5D engine | Tiled maps, cameras, physics, WebGL/Canvas fallback | Replaces the existing Phaser plan | Viable but unnecessary |
-| Three.js | 3D rendering library | 3D scenes, cameras, materials, loaders, post-processing | Requires building most game systems; wrong visual target | Not preferred |
-| PlayCanvas | Browser-first 3D engine and editor | 3D scene authoring, asset management, physics, publishing | Substantially larger 3D pipeline | Only for a deliberate 3D pivot |
-| GDevelop | Visual 2D/3D engine | Fast editor workflow, behaviors, templates, JavaScript extensions | Splits the game workflow from the SvelteKit application | Not preferred for this integration |
+| Library      | Category                           | Strength                                                             | Cost for this project                                           | Assessment                         |
+| ------------ | ---------------------------------- | -------------------------------------------------------------------- | --------------------------------------------------------------- | ---------------------------------- |
+| Excalibur.js | TypeScript-first 2D engine         | Strong typed API, actors, scenes, events, physics                    | Low for the revised direction                                   | Recommended                        |
+| Phaser 3     | Full 2D game framework             | Scenes, animation, input, cameras, particles, tilemaps, Canvas/WebGL | Moderate migration cost from Excalibur                          | Viable alternative                 |
+| PixiJS       | 2D rendering engine                | Fast sprites, filters, scene graph, WebGL/WebGPU                     | Must add game lifecycle, physics, scene rules, and many systems | Not preferred                      |
+| KAPLAY       | Lightweight 2D game library        | Fast prototyping and simple component-style game objects             | Smaller ecosystem and different architecture from the guide     | Good prototype alternative         |
+| melonJS      | Full 2D/2.5D engine                | Tiled maps, cameras, physics, WebGL/Canvas fallback                  | Replaces the existing Phaser plan                               | Viable but unnecessary             |
+| Three.js     | 3D rendering library               | 3D scenes, cameras, materials, loaders, post-processing              | Requires building most game systems; wrong visual target        | Not preferred                      |
+| PlayCanvas   | Browser-first 3D engine and editor | 3D scene authoring, asset management, physics, publishing            | Substantially larger 3D pipeline                                | Only for a deliberate 3D pivot     |
+| GDevelop     | Visual 2D/3D engine                | Fast editor workflow, behaviors, templates, JavaScript extensions    | Splits the game workflow from the SvelteKit application         | Not preferred for this integration |
 
 ## Phaser 3
 
@@ -66,13 +66,13 @@ Why it is attractive:
 - A more opinionated actor and event model than a low-level renderer.
 - Could represent the mage, enemy, projectiles, and shield effects cleanly.
 
-Why it is not the default:
+Why it was not the default before the revised direction:
 
 - The provided guide and existing research already target Phaser.
 - Switching engines would require replacing the planned Phaser scene and asset integration.
-- The project has no current Excalibur implementation to justify migration risk.
+- The original Session Zero guide specified Phaser and required a deliberate engine decision.
 
-Use Excalibur only if the team prefers its TypeScript actor model before any Phaser code is written.
+The engine decision is now made: use Excalibur.js for the implementation. The remaining Phaser material is historical context and an alternative reference.
 
 Source: [Excalibur.js](https://excaliburjs.com)
 
@@ -152,4 +152,4 @@ Source: [GDevelop](https://gdevelop.io)
 
 ## Decision
 
-Keep Phaser as the default. Consider Excalibur only before implementation begins if a TypeScript-first actor model is more valuable than staying aligned with the supplied guide. Do not switch to PixiJS unless the team is intentionally building the game framework layer. Do not use Three.js or PlayCanvas unless the visual target becomes genuinely 3D.
+Use Excalibur.js for the game runtime. Keep Phaser documented as the closest guide-compatible alternative. Do not switch to PixiJS unless the team is intentionally building the game framework layer. Do not use Three.js or PlayCanvas unless the visual target becomes genuinely 3D.
