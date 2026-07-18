@@ -15,12 +15,14 @@ import type { BattleResources } from './resources';
 const ARENA_WIDTH = 1672;
 const ARENA_HEIGHT = 941;
 const BATTLE_CENTER = vec(ARENA_WIDTH / 2, ARENA_HEIGHT / 2);
-const PLAYER_POSITION = vec(500, 790);
-const ENEMY_POSITION = vec(1120, 804);
-const PLAYER_CAST_POINT = vec(660, 340);
-const ENEMY_HIT_POINT = vec(1120, 410);
-const PLAYER_SCALE = 0.42;
-const ENEMY_SCALE = 0.5;
+const CAMERA_ZOOM = 0.9;
+const BACKDROP_SCALE = 1.12;
+const PLAYER_POSITION = vec(330, 780);
+const ENEMY_POSITION = vec(1340, 789);
+const PLAYER_CAST_POINT = vec(445, 459);
+const ENEMY_HIT_POINT = vec(1340, 506);
+const PLAYER_SCALE = 0.3;
+const ENEMY_SCALE = 0.36;
 const PROJECTILE_SCALE = 0.28;
 const PROJECTILE_CORE_OFFSET = vec(72, 0);
 
@@ -74,7 +76,7 @@ export class BattleScene extends Scene {
 
 	public onInitialize(engine: Engine) {
 		engine.currentScene.camera.pos = BATTLE_CENTER;
-		engine.currentScene.camera.zoom = 1;
+		engine.currentScene.camera.zoom = CAMERA_ZOOM;
 
 		this.addArena();
 		this.addActors();
@@ -104,6 +106,7 @@ export class BattleScene extends Scene {
 	private addArena() {
 		const arena = new Actor({ pos: BATTLE_CENTER, anchor: vec(0.5, 0.5), z: 0 });
 		arena.graphics.use(this.resources.arena.toSprite());
+		arena.scale = vec(BACKDROP_SCALE, BACKDROP_SCALE);
 		this.add(arena);
 
 		const playerShadow = this.createCircle(
@@ -133,6 +136,7 @@ export class BattleScene extends Scene {
 			z: 3,
 		});
 		this.sceneTint.graphics.opacity = 0;
+		this.sceneTint.scale = vec(BACKDROP_SCALE, BACKDROP_SCALE);
 		this.add(this.sceneTint);
 	}
 
