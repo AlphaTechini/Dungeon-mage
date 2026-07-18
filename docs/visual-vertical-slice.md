@@ -6,11 +6,12 @@ Version 1 is a local visual test for the 2.5D battle presentation. It deliberate
 
 ## Current Scene
 
-- The arena renders at its native 1672x941 size inside a responsive 16:9 canvas frame.
-- The purple player mage holds the left foreground.
-- The red mage sits in the right background.
+- The arena renders at its native 1672x941 logical size inside a full-browser letterboxed canvas frame.
+- The purple player mage holds the left side of the arena.
+- The red mage holds the right side on the same ground line at a comparable visual scale.
 - `ArrowRight` is the only active move and plays the player medium attack.
 - `ArrowLeft`, `ArrowDown`, and `ArrowUp` report Small Attack, Shield, and Big Attack as coming soon.
+- The upper HUD includes a Fullscreen button that enters browser fullscreen for the battle stage.
 - Inputs are ignored while the medium sequence is active.
 - The hit presents a floating 25 damage label and no health or defeat rule.
 
@@ -19,7 +20,7 @@ Version 1 is a local visual test for the 2.5D battle presentation. It deliberate
 1. Both mages idle with a small vertical breathing loop.
 2. ArrowRight swaps the player to the cast pose and begins the charge beat.
 3. Purple cast glow, ground glow, arena tint, slight scale increase, and camera reframe build together.
-4. The medium projectile launches from the player cast anchor and travels left to right on a shallow arc.
+4. The medium projectile launches from the player cast anchor as a layered plasma blast with an inner beam, outer ribbon, and trailing motes.
 5. The projectile reaches the enemy hit anchor.
 6. Enemy recoil, impact flash, sparks, 25 damage label, and camera shake play together.
 7. The scene restores position, opacity, scale, tint, camera, and idle art before accepting another cast.
@@ -37,7 +38,7 @@ Version 1 is a local visual test for the 2.5D battle presentation. It deliberate
 
 ## 2.5D Translation
 
-The supplied images remain flat artwork. The scene creates depth by placing the player larger and lower than the enemy, using ground shadows, spell-colored lighting overlays, and a small camera focus change during casting. It does not rotate the art or claim to create a true over-the-shoulder camera angle.
+The supplied images remain flat artwork. The scene uses equal-ground side-by-side staging, ground shadows, spell-colored lighting overlays, and layered projectile effects. It does not rotate the art, crop either mage during a cast, or claim to create a true over-the-shoulder camera angle.
 
 ## Acceptance Criteria
 

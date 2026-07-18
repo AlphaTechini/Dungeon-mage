@@ -63,6 +63,7 @@ Requirements:
 - Accept a canvas element or canvas ID owned by the route component.
 - Stop and dispose the engine when the route unmounts.
 - Do not create a second engine while one is mounted.
+- Keep the logical arena fixed at 1672x941, cap rendering at 60 FPS, and use a 1x pixel ratio to avoid high-DPI render amplification.
 
 ### `BattleScene.ts`
 

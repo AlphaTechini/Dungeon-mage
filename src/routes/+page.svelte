@@ -2,7 +2,18 @@
 	import { onMount } from 'svelte';
 
 	let canvas: HTMLCanvasElement;
+	let battleShell: HTMLElement;
 	let status = 'Press Right Arrow to cast Medium Attack';
+	let isFullscreen = false;
+
+	async function toggleFullscreen() {
+		if (document.fullscreenElement) {
+			await document.exitFullscreen();
+			return;
+		}
+
+		await battleShell.requestFullscreen();
+	}
 
 	onMount(() => {
 		let game: { destroy: () => void; handleKey: (code: string) => void } | undefined;
@@ -15,6 +26,9 @@
 			event.preventDefault();
 			game?.handleKey(event.code);
 		};
+		const handleFullscreenChange = () => {
+			isFullscreen = document.fullscreenElement === battleShell;
+		};
 
 		void import('$lib/game/createGame').then(({ createGame }) => {
 			if (destroyed) {
@@ -26,10 +40,12 @@
 			});
 		});
 		window.addEventListener('keydown', handleKeydown);
+		document.addEventListener('fullscreenchange', handleFullscreenChange);
 
 		return () => {
 			destroyed = true;
 			window.removeEventListener('keydown', handleKeydown);
+			document.removeEventListener('fullscreenchange', handleFullscreenChange);
 			game?.destroy();
 		};
 	});
@@ -41,19 +57,31 @@
 		name="description"
 		content="Local visual prototype for a cinematic turn-based mage battle."
 	/>
+	<link rel="preload" as="image" href="/background(dungeon).png" />
+	<link rel="preload" as="image" href="/mage%20idle%20left_no_bg.png" />
+	<link rel="preload" as="image" href="/mage%20wand%20cast_no_bg.png" />
+	<link rel="preload" as="image" href="/Mage%20medium%20att_no_bg.png" />
+	<link rel="preload" as="image" href="/enemy%20idle_no_bg.png" />
 </svelte:head>
 
 <main>
-	<section class="battle-shell" aria-label="Mage battle preview">
-		<canvas bind:this={canvas} aria-label="Animated mage battle canvas"></canvas>
-		<div class="hud" aria-live="polite">
-			<p class="eyebrow">LOCAL BATTLE TEST</p>
-			<p class="status">{status}</p>
-			<div class="controls" aria-label="Keyboard controls">
-				<span><kbd>Left</kbd> Small <em>Coming Soon</em></span>
-				<span><kbd>Down</kbd> Shield <em>Coming Soon</em></span>
-				<span><kbd>Right</kbd> Medium Attack</span>
-				<span><kbd>Up</kbd> Big Attack <em>Coming Soon</em></span>
+	<section bind:this={battleShell} class="battle-shell" aria-label="Mage battle preview">
+		<div class="game-frame">
+			<canvas bind:this={canvas} aria-label="Animated mage battle canvas"></canvas>
+			<div class="hud" aria-live="polite">
+				<div class="hud-top">
+					<p class="eyebrow">LOCAL BATTLE TEST</p>
+					<button class="fullscreen" type="button" onclick={toggleFullscreen}>
+						{isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
+					</button>
+				</div>
+				<p class="status">{status}</p>
+				<div class="controls" aria-label="Keyboard controls">
+					<span><kbd>Left</kbd> Small <em>Coming Soon</em></span>
+					<span><kbd>Down</kbd> Shield <em>Coming Soon</em></span>
+					<span><kbd>Right</kbd> Medium Attack</span>
+					<span><kbd>Up</kbd> Big Attack <em>Coming Soon</em></span>
+				</div>
 			</div>
 		</div>
 	</section>
@@ -67,50 +95,51 @@
 	:global(body) {
 		margin: 0;
 		min-width: 320px;
+		overflow: hidden;
 		background: #080711;
 		color: #f8f1ff;
 		font-family: Inter, ui-sans-serif, system-ui, sans-serif;
 	}
 
 	main {
-		--page-padding: clamp(0.75rem, 2vw, 2rem);
 		height: 100svh;
-		display: grid;
-		place-items: center;
-		padding: var(--page-padding);
-		background:
-			radial-gradient(circle at 50% 20%, rgb(95 46 141 / 25%), transparent 42rem),
-			linear-gradient(145deg, #100a1f, #05040b 70%);
+		background: #05040b;
 	}
 
 	.battle-shell {
 		position: relative;
-		aspect-ratio: 16 / 9;
-		overflow: hidden;
-		background: #14101a;
-		box-shadow: 0 1.5rem 5rem rgb(0 0 0 / 55%);
+		width: 100vw;
+		height: 100svh;
+		display: grid;
+		place-items: center;
+		background: radial-gradient(circle at 50% 20%, rgb(95 46 141 / 22%), transparent 42rem);
 	}
 
 	@media (max-aspect-ratio: 16 / 9) {
-		.battle-shell {
+		.game-frame {
 			width: 100%;
-			max-width: 1672px;
 			height: auto;
 		}
 	}
 
 	@media (min-aspect-ratio: 16 / 9) {
-		.battle-shell {
+		.game-frame {
 			width: auto;
-			max-width: 100%;
-			height: min(941px, calc(100svh - var(--page-padding) - var(--page-padding)));
+			height: 100%;
 		}
+	}
+
+	.game-frame {
+		position: relative;
+		aspect-ratio: 16 / 9;
+		overflow: hidden;
+		background: #14101a;
 	}
 
 	canvas {
 		display: block;
-		width: 100%;
-		height: 100%;
+		width: 100% !important;
+		height: 100% !important;
 	}
 
 	.hud {
@@ -122,6 +151,13 @@
 		justify-content: space-between;
 		padding: clamp(0.8rem, 2vw, 1.6rem);
 		text-shadow: 0 0.125rem 0.4rem rgb(0 0 0 / 80%);
+	}
+
+	.hud-top {
+		display: flex;
+		justify-content: space-between;
+		align-items: flex-start;
+		gap: 0.75rem;
 	}
 
 	.eyebrow,
@@ -139,6 +175,26 @@
 		font-weight: 800;
 		letter-spacing: 0.16em;
 		color: #dec7ff;
+	}
+
+	.fullscreen {
+		pointer-events: auto;
+		padding: 0.45rem 0.7rem;
+		border: 1px solid rgb(226 194 255 / 48%);
+		background: rgb(12 7 24 / 78%);
+		color: #f8f1ff;
+		font: inherit;
+		font-size: clamp(0.58rem, 1vw, 0.75rem);
+		font-weight: 800;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		cursor: pointer;
+	}
+
+	.fullscreen:hover,
+	.fullscreen:focus-visible {
+		border-color: #e2c2ff;
+		background: rgb(58 29 93 / 88%);
 	}
 
 	.status {

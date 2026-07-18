@@ -15,12 +15,14 @@ import type { BattleResources } from './resources';
 const ARENA_WIDTH = 1672;
 const ARENA_HEIGHT = 941;
 const BATTLE_CENTER = vec(ARENA_WIDTH / 2, ARENA_HEIGHT / 2);
-const PLAYER_POSITION = vec(430, 860);
-const ENEMY_POSITION = vec(1240, 700);
-const PLAYER_CAST_POINT = vec(690, 290);
-const ENEMY_HIT_POINT = vec(1260, 420);
-const PLAYER_SCALE = 0.55;
-const ENEMY_SCALE = 0.39;
+const PLAYER_POSITION = vec(500, 790);
+const ENEMY_POSITION = vec(1120, 804);
+const PLAYER_CAST_POINT = vec(660, 340);
+const ENEMY_HIT_POINT = vec(1120, 410);
+const PLAYER_SCALE = 0.42;
+const ENEMY_SCALE = 0.5;
+const PROJECTILE_SCALE = 0.28;
+const PROJECTILE_CORE_OFFSET = vec(72, 0);
 
 type BattlePhase = 'idle' | 'charge' | 'flight' | 'impact' | 'recover';
 
@@ -39,6 +41,9 @@ export class BattleScene extends Scene {
 	private impactCore!: Actor;
 	private damageLabel!: Label;
 	private sceneTint!: Actor;
+	private blastOuter!: Actor;
+	private blastInner!: Actor;
+	private blastMotes: Actor[] = [];
 	private sparks: Actor[] = [];
 
 	public constructor(resources: BattleResources, setStatus: (status: string) => void) {
@@ -82,7 +87,7 @@ export class BattleScene extends Scene {
 
 		switch (this.phase) {
 			case 'charge':
-				this.updateCharge(engine);
+				this.updateCharge();
 				break;
 			case 'flight':
 				this.updateProjectile();
@@ -91,7 +96,7 @@ export class BattleScene extends Scene {
 				this.updateImpact(engine);
 				break;
 			case 'recover':
-				this.updateRecovery(engine);
+				this.updateRecovery();
 				break;
 		}
 	}
@@ -102,7 +107,7 @@ export class BattleScene extends Scene {
 		this.add(arena);
 
 		const playerShadow = this.createCircle(
-			PLAYER_POSITION.add(vec(45, -18)),
+			PLAYER_POSITION.add(vec(20, -19)),
 			120,
 			new Color(11, 5, 21, 0.5),
 			2,
@@ -111,7 +116,7 @@ export class BattleScene extends Scene {
 		this.add(playerShadow);
 
 		const enemyShadow = this.createCircle(
-			ENEMY_POSITION.add(vec(0, -25)),
+			ENEMY_POSITION.add(vec(0, -32)),
 			105,
 			new Color(14, 4, 12, 0.48),
 			2,
@@ -146,7 +151,7 @@ export class BattleScene extends Scene {
 
 		this.projectile = new Actor({ pos: PLAYER_CAST_POINT, anchor: vec(0.5, 0.5), z: 18 });
 		this.projectile.graphics.use(this.resources.playerMediumProjectile.toSprite());
-		this.projectile.scale = vec(0.22, 0.22);
+		this.projectile.scale = vec(PROJECTILE_SCALE, PROJECTILE_SCALE);
 		this.projectile.graphics.opacity = 0;
 		this.add(this.projectile);
 	}
@@ -169,6 +174,21 @@ export class BattleScene extends Scene {
 		this.castGlow = this.createCircle(PLAYER_CAST_POINT, 38, new Color(238, 216, 255, 0.95), 13);
 		this.castGlow.graphics.opacity = 0;
 		this.add(this.castGlow);
+
+		this.blastOuter = this.createCircle(PLAYER_CAST_POINT, 72, new Color(123, 55, 255, 0.45), 15);
+		this.blastOuter.graphics.opacity = 0;
+		this.add(this.blastOuter);
+
+		this.blastInner = this.createCircle(PLAYER_CAST_POINT, 34, new Color(236, 203, 255, 0.85), 16);
+		this.blastInner.graphics.opacity = 0;
+		this.add(this.blastInner);
+
+		for (let index = 0; index < 4; index += 1) {
+			const mote = this.createCircle(PLAYER_CAST_POINT, 14, new Color(205, 149, 255, 0.9), 17);
+			mote.graphics.opacity = 0;
+			this.blastMotes.push(mote);
+			this.add(mote);
+		}
 
 		this.impactGlow = this.createCircle(ENEMY_HIT_POINT, 170, new Color(156, 75, 255, 0.55), 20);
 		this.impactGlow.graphics.opacity = 0;
@@ -217,15 +237,17 @@ export class BattleScene extends Scene {
 	private updateIdleMotion() {
 		const time = performance.now() / 1000;
 		if (this.phase === 'idle') {
-			this.player.pos = PLAYER_POSITION.add(vec(0, Math.sin(time * 2.2) * 4));
-			this.enemy.pos = ENEMY_POSITION.add(vec(0, Math.sin(time * 1.8 + 0.7) * 3));
-			this.player.scale = vec(PLAYER_SCALE, PLAYER_SCALE);
-			this.enemy.scale = vec(ENEMY_SCALE, ENEMY_SCALE);
+			const playerBreath = 1 + Math.sin(time * 2.2) * 0.008;
+			const enemyBreath = 1 + Math.sin(time * 1.8 + 0.7) * 0.008;
+			this.player.pos = PLAYER_POSITION;
+			this.enemy.pos = ENEMY_POSITION;
+			this.player.scale = vec(PLAYER_SCALE * playerBreath, PLAYER_SCALE * playerBreath);
+			this.enemy.scale = vec(ENEMY_SCALE * enemyBreath, ENEMY_SCALE * enemyBreath);
 			this.player.graphics.use('idle');
 		}
 	}
 
-	private updateCharge(engine: Engine) {
+	private updateCharge() {
 		const progress = clamp(this.phaseElapsed / 720, 0, 1);
 		const pulse = 1 + Math.sin(this.phaseElapsed / 65) * 0.07;
 		this.player.scale = vec(
@@ -238,8 +260,6 @@ export class BattleScene extends Scene {
 		this.castGlow.graphics.opacity = 0.72 + Math.sin(this.phaseElapsed / 55) * 0.18;
 		this.groundGlow.graphics.opacity = progress * 0.9;
 		this.sceneTint.graphics.opacity = progress * 0.26;
-		engine.currentScene.camera.pos = lerpVector(BATTLE_CENTER, vec(760, 430), progress * 0.35);
-		engine.currentScene.camera.zoom = 1 + progress * 0.045;
 
 		if (progress === 1) {
 			this.phase = 'flight';
@@ -251,14 +271,17 @@ export class BattleScene extends Scene {
 
 	private updateProjectile() {
 		const progress = clamp(this.phaseElapsed / 560, 0, 1);
-		const coreOffset = vec(57, 0);
 		const projectilePosition = lerpVector(
-			PLAYER_CAST_POINT.sub(coreOffset),
-			ENEMY_HIT_POINT.sub(coreOffset),
+			PLAYER_CAST_POINT.sub(PROJECTILE_CORE_OFFSET),
+			ENEMY_HIT_POINT.sub(PROJECTILE_CORE_OFFSET),
 			progress,
 		);
 		this.projectile.pos = projectilePosition.add(vec(0, -Math.sin(progress * Math.PI) * 42));
-		this.projectile.scale = vec(0.22 + progress * 0.035, 0.22 + progress * 0.035);
+		this.projectile.scale = vec(
+			PROJECTILE_SCALE + progress * 0.045,
+			PROJECTILE_SCALE + progress * 0.045,
+		);
+		this.updateBlast(progress, this.projectile.pos.add(PROJECTILE_CORE_OFFSET));
 		this.castAura.graphics.opacity = (1 - progress) * 0.85;
 		this.castGlow.graphics.opacity = (1 - progress) * 0.9;
 		this.groundGlow.graphics.opacity = (1 - progress) * 0.8;
@@ -273,6 +296,7 @@ export class BattleScene extends Scene {
 		this.phase = 'impact';
 		this.phaseElapsed = 0;
 		this.projectile.graphics.opacity = 0;
+		this.hideBlast();
 		this.impactGlow.graphics.opacity = 1;
 		this.impactCore.graphics.opacity = 1;
 		this.damageLabel.pos = ENEMY_HIT_POINT.add(vec(0, -35));
@@ -293,9 +317,7 @@ export class BattleScene extends Scene {
 		this.impactGlow.graphics.opacity = 1 - progress;
 		this.impactCore.scale = vec(1 + progress * 1.7, 1 + progress * 1.7);
 		this.impactCore.graphics.opacity = 1 - progress;
-		this.enemy.pos = ENEMY_POSITION.add(
-			vec(-20 * (1 - progress), Math.sin(progress * Math.PI) * -8),
-		);
+		this.enemy.pos = ENEMY_POSITION.add(vec(-20 * (1 - progress), 0));
 		this.enemy.graphics.opacity = progress < 0.22 ? 0.42 : 1;
 		this.damageLabel.pos = ENEMY_HIT_POINT.add(vec(0, -35 - progress * 92));
 		this.damageLabel.opacity = 1 - progress;
@@ -318,15 +340,13 @@ export class BattleScene extends Scene {
 		}
 	}
 
-	private updateRecovery(engine: Engine) {
+	private updateRecovery() {
 		const progress = clamp(this.phaseElapsed / 440, 0, 1);
 		this.player.scale = vec(
 			PLAYER_SCALE * (1.08 - progress * 0.08),
 			PLAYER_SCALE * (1.08 - progress * 0.08),
 		);
 		this.enemy.pos = lerpVector(ENEMY_POSITION.add(vec(-4, 0)), ENEMY_POSITION, progress);
-		engine.currentScene.camera.pos = lerpVector(vec(760, 430), BATTLE_CENTER, progress);
-		engine.currentScene.camera.zoom = 1.045 - progress * 0.045;
 
 		if (progress === 1) {
 			this.phase = 'idle';
@@ -338,6 +358,44 @@ export class BattleScene extends Scene {
 
 	private createCircle(position: Vector, radius: number, color: Color, z: number) {
 		return new Actor({ pos: position, radius, color, anchor: vec(0.5, 0.5), z });
+	}
+
+	private updateBlast(progress: number, corePosition: Vector) {
+		const delta = corePosition.sub(PLAYER_CAST_POINT);
+		const distance = Math.hypot(delta.x, delta.y);
+		const pulse = 1 + Math.sin(this.phaseElapsed / 42) * 0.12;
+		const midpoint = PLAYER_CAST_POINT.add(delta.scale(0.5));
+		const angle = Math.atan2(delta.y, delta.x);
+
+		this.blastOuter.pos = midpoint;
+		this.blastOuter.rotation = angle;
+		this.blastOuter.scale = vec(distance / 144, 0.42 * pulse);
+		this.blastOuter.graphics.opacity = 0.3 + Math.sin(this.phaseElapsed / 48) * 0.08;
+
+		this.blastInner.pos = midpoint;
+		this.blastInner.rotation = angle;
+		this.blastInner.scale = vec(distance / 68, 0.28 * pulse);
+		this.blastInner.graphics.opacity = 0.72;
+
+		this.blastMotes.forEach((mote, index) => {
+			const trailProgress = Math.max(0, progress - (index + 1) * 0.11);
+			const trailPoint = lerpVector(
+				PLAYER_CAST_POINT,
+				corePosition,
+				trailProgress / Math.max(progress, 0.01),
+			);
+			mote.pos = trailPoint;
+			mote.scale = vec(0.45 + index * 0.08, 0.45 + index * 0.08);
+			mote.graphics.opacity = progress > (index + 1) * 0.08 ? 0.75 - index * 0.1 : 0;
+		});
+	}
+
+	private hideBlast() {
+		this.blastOuter.graphics.opacity = 0;
+		this.blastInner.graphics.opacity = 0;
+		this.blastMotes.forEach((mote) => {
+			mote.graphics.opacity = 0;
+		});
 	}
 }
 

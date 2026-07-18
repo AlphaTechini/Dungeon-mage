@@ -16,8 +16,8 @@ No runtime 3D meshes, 3D camera orbit, skeletal 3D rigs, or physics-based destru
 ### Normal Battle View
 
 ```text
-Player: left foreground
-Enemy: upper-right background
+Player: left side
+Enemy: right side on the same ground line
 Both actors visible
 Wide arena composition
 Foreground visible but non-obscuring
@@ -28,9 +28,9 @@ This is the resting composition. It must be easy to read at a glance and leave s
 ### Player Attack View
 
 ```text
-Player gains a small scale increase during the cast
+Both mages remain visible at comparable scale during the cast
 Projectile moves from left to right toward the enemy chest anchor
-The camera eases slightly toward the casting side
+The camera remains in the complete arena framing
 The arena receives a restrained purple tint
 The impact uses a short shake and a floating damage label
 ```
@@ -66,7 +66,7 @@ When separated foreground and distant layers arrive, store their offsets as name
 
 Use coordinated, low-cost effects rather than actual geometry:
 
-- Scale the attacking mage up slightly during attack framing.
+- Keep both side-by-side mages in the frame throughout the attack.
 - Add separated foreground layers only after the art supports independent movement.
 - Add a restrained spell-color tint during the wind-up.
 - Use an actor shadow beneath each mage.
