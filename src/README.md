@@ -11,3 +11,5 @@ Svelte owns the route shell and accessible HUD. Excalibur owns the fixed-size ba
 To find the game route and HUD logic visit [+page.svelte](file:///C:/game-hackathons/Expedition%2033-DN/src/routes/+page.svelte).
 
 To find the Excalibur setup and battle presentation visit [lib/game/README.md](file:///C:/game-hackathons/Expedition%2033-DN/src/lib/game/README.md).
+
+To find the isolated Web3 service layer visit [lib/web3/README.md](file:///C:/game-hackathons/Expedition%2033-DN/src/lib/web3/README.md).

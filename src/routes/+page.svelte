@@ -1,10 +1,17 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import LandingIntro from '$lib/frontend/LandingIntro.svelte';
 
 	let canvas: HTMLCanvasElement;
 	let battleShell: HTMLElement;
 	let status = 'Press Right Arrow to cast Medium Attack';
 	let isFullscreen = false;
+	let battle = {
+		playerHealth: 100,
+		playerMana: 100,
+		enemyHealth: 100,
+		enemyMana: 100,
+	};
 
 	async function toggleFullscreen() {
 		if (document.fullscreenElement) {
@@ -35,9 +42,18 @@
 				return;
 			}
 
-			game = createGame(canvas, (nextStatus) => {
-				status = nextStatus;
-			});
+			game = createGame(
+				canvas,
+				(nextStatus) => {
+					status = nextStatus;
+				},
+				(nextBattle) => {
+					battle = nextBattle;
+				},
+				(result) => {
+					window.location.assign(`/frontend/conclusion.html?result=${result}`);
+				},
+			);
 		});
 		window.addEventListener('keydown', handleKeydown);
 		document.addEventListener('fullscreenchange', handleFullscreenChange);
@@ -52,21 +68,27 @@
 </script>
 
 <svelte:head>
-	<title>Expedition 33-DN | Battle Preview</title>
+	<title>Expedition 33-DN | Enter the rift</title>
 	<meta
 		name="description"
-		content="Local visual prototype for a cinematic turn-based mage battle."
+		content="A turn-based Web3 dungeon run where the fight comes first and the chain stays out of the way."
 	/>
 	<link rel="preload" as="image" href="/background(dungeon).png" />
 	<link rel="preload" as="image" href="/mage%20idle%20left_no_bg.png" />
+	<link rel="preload" as="image" href="/mage%20damaged%20by%20att.png" />
+	<link rel="preload" as="image" href="/Mage%20defeated_no_bg.png" />
 	<link rel="preload" as="image" href="/mage%20wand%20cast_no_bg.png" />
 	<link rel="preload" as="image" href="/Mage%20medium%20att_no_bg.png" />
 	<link rel="preload" as="image" href="/enemy%20idle_no_bg.png" />
-	<link rel="preload" as="image" href="/enemy%20charge%20medium_no_bg.png" />
+	<link rel="preload" as="image" href="/enemy%20defeated-remove-bg-io.png" />
+	<link rel="preload" as="image" href="/enemy%20large%20att%20charge_no_bg.png" />
+	<link rel="preload" as="image" href="/enemy%20release%20large%20att-no-bg.png" />
 	<link rel="preload" as="image" href="/transparent%20meteor.png" />
+	<link rel="stylesheet" href="/frontend/styles.css" />
 </svelte:head>
 
 <main>
+	<LandingIntro />
 	<section bind:this={battleShell} class="battle-shell" aria-label="Mage battle preview">
 		<div class="game-frame">
 			<canvas bind:this={canvas} aria-label="Animated mage battle canvas"></canvas>
@@ -76,6 +98,42 @@
 					<button class="fullscreen" type="button" onclick={toggleFullscreen}>
 						{isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
 					</button>
+				</div>
+				<div class="resource-panels" aria-label="Battle resources">
+					<section class="combatant player-resources" aria-label="Mage resources">
+						<div class="combatant-name">
+							<span>Mage</span><strong>{battle.playerHealth} / 100</strong>
+						</div>
+						<div
+							class="resource-bar health"
+							aria-label={`Mage health ${battle.playerHealth} of 100`}
+						>
+							<span style:width={`${battle.playerHealth}%`}></span>
+						</div>
+						<div class="combatant-name mana-label">
+							<span>Mana</span><strong>{battle.playerMana} / 100</strong>
+						</div>
+						<div class="resource-bar mana" aria-label={`Mage mana ${battle.playerMana} of 100`}>
+							<span style:width={`${battle.playerMana}%`}></span>
+						</div>
+					</section>
+					<section class="combatant enemy-resources" aria-label="Demon resources">
+						<div class="combatant-name">
+							<span>Demon</span><strong>{battle.enemyHealth} / 100</strong>
+						</div>
+						<div
+							class="resource-bar health"
+							aria-label={`Demon health ${battle.enemyHealth} of 100`}
+						>
+							<span style:width={`${battle.enemyHealth}%`}></span>
+						</div>
+						<div class="combatant-name mana-label">
+							<span>Mana</span><strong>{battle.enemyMana} / 100</strong>
+						</div>
+						<div class="resource-bar mana" aria-label={`Demon mana ${battle.enemyMana} of 100`}>
+							<span style:width={`${battle.enemyMana}%`}></span>
+						</div>
+					</section>
 				</div>
 				<p class="status">{status}</p>
 				<div class="controls" aria-label="Keyboard controls">
@@ -160,6 +218,70 @@
 		justify-content: space-between;
 		align-items: flex-start;
 		gap: 0.75rem;
+	}
+
+	.resource-panels {
+		position: absolute;
+		top: clamp(3.1rem, 7vw, 5rem);
+		left: clamp(0.8rem, 2vw, 1.6rem);
+		right: clamp(0.8rem, 2vw, 1.6rem);
+		display: flex;
+		justify-content: space-between;
+		gap: 1rem;
+	}
+
+	.combatant {
+		width: min(13rem, 28vw);
+		padding: 0.45rem 0.55rem 0.55rem;
+		border: 1px solid rgb(226 194 255 / 30%);
+		background: rgb(12 7 24 / 68%);
+		backdrop-filter: blur(0.4rem);
+	}
+
+	.enemy-resources {
+		text-align: right;
+	}
+
+	.combatant-name {
+		display: flex;
+		justify-content: space-between;
+		gap: 0.6rem;
+		margin-bottom: 0.25rem;
+		font-size: clamp(0.5rem, 0.8vw, 0.65rem);
+		font-weight: 800;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+	}
+
+	.enemy-resources .combatant-name {
+		flex-direction: row-reverse;
+	}
+
+	.mana-label {
+		margin-top: 0.42rem;
+	}
+
+	.resource-bar {
+		height: clamp(0.38rem, 0.8vw, 0.55rem);
+		overflow: hidden;
+		border: 1px solid rgb(255 255 255 / 20%);
+		background: rgb(0 0 0 / 48%);
+	}
+
+	.resource-bar span {
+		display: block;
+		height: 100%;
+		transition: width 450ms ease;
+	}
+
+	.resource-bar.health span {
+		background: linear-gradient(90deg, #bd3b44, #ff886f);
+		box-shadow: 0 0 0.7rem rgb(255 86 62 / 65%);
+	}
+
+	.resource-bar.mana span {
+		background: linear-gradient(90deg, #4269d4, #7fe7ff);
+		box-shadow: 0 0 0.7rem rgb(82 176 255 / 65%);
 	}
 
 	.eyebrow,

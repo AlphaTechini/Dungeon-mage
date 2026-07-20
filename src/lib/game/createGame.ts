@@ -1,5 +1,5 @@
 import { Color, DisplayMode, Engine } from 'excalibur';
-import { BattleScene } from './BattleScene';
+import { BattleScene, type BattleBars, type BattleResult } from './BattleScene';
 import { createLoader, resources } from './resources';
 
 const ARENA_WIDTH = 1672;
@@ -13,6 +13,8 @@ export interface GameController {
 export function createGame(
 	canvas: HTMLCanvasElement,
 	setStatus: (status: string) => void,
+	setBars: (bars: BattleBars) => void,
+	concludeBattle: (result: BattleResult) => void,
 ): GameController {
 	const engine = new Engine({
 		canvasElement: canvas,
@@ -25,7 +27,7 @@ export function createGame(
 		antialiasing: true,
 		physics: false,
 	});
-	const scene = new BattleScene(resources, setStatus);
+	const scene = new BattleScene(resources, setStatus, setBars, concludeBattle);
 	let destroyed = false;
 
 	engine.addScene('battle', scene);

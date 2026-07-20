@@ -13,8 +13,10 @@ Version 1 is a local visual test for the 2.5D battle presentation. It deliberate
 - `ArrowLeft`, `ArrowDown`, and `ArrowUp` report Small Attack, Shield, and Big Attack as coming soon.
 - The upper HUD includes a Fullscreen button that enters browser fullscreen for the battle stage.
 - Inputs are ignored while the medium sequence is active.
-- The hit presents a floating 25 damage label and no health or defeat rule.
+- The hit presents a floating 25 damage label, reduces health, and spends its matching mana cost.
 - After the player recovers, the demon automatically charges and drops a meteor on the player for a presentation-only 50 damage hit.
+- Both combatants display 100-point health and mana bars above the arena.
+- Zero health displays defeated art and a large result label before the conclusion page opens.
 
 ## Scene Timeline
 

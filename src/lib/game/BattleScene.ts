@@ -23,6 +23,17 @@ const PLAYER_CAST_POINT = vec(445, 459);
 const ENEMY_HIT_POINT = vec(1340, 506);
 const PLAYER_SCALE = 0.3;
 const ENEMY_SCALE = 0.36;
+// These 600px exports are scaled to match the visible height of the original battle poses.
+const ENEMY_RELEASE_SCALE = 0.69;
+const DAMAGED_PLAYER_SCALE = 0.73;
+const ENEMY_CHARGE_OFFSET = vec(0, -13);
+const ENEMY_RELEASE_OFFSET = vec(0, -20);
+const DAMAGED_PLAYER_OFFSET = vec(0, 0);
+const DAMAGE_HOLD_DURATION = 750;
+const DAMAGE_FADE_DURATION = 1200;
+const MEDIUM_ATTACK_COST = 25;
+const METEOR_ATTACK_COST = 50;
+const DEFEAT_DISPLAY_DURATION = 1500;
 const PROJECTILE_SCALE = 0.28;
 const PROJECTILE_CORE_OFFSET = vec(72, 0);
 const METEOR_SCALE = 0.52;
@@ -37,17 +48,40 @@ type BattlePhase =
 	| 'impact'
 	| 'recover'
 	| 'enemyCharge'
+	| 'enemyRelease'
 	| 'meteorFall'
 	| 'meteorImpact'
-	| 'enemyRecover';
+	| 'enemyRecover'
+	| 'defeat';
+
+export interface BattleBars {
+	playerHealth: number;
+	playerMana: number;
+	enemyHealth: number;
+	enemyMana: number;
+}
+
+export type BattleResult = 'victory' | 'defeat';
 
 export class BattleScene extends Scene {
 	private readonly resources: BattleResources;
 	private readonly setStatus: (status: string) => void;
+	private readonly setBars: (bars: BattleBars) => void;
+	private readonly concludeBattle: (result: BattleResult) => void;
 	private phase: BattlePhase = 'idle';
 	private phaseElapsed = 0;
+	private playerHealth = 100;
+	private playerMana = 100;
+	private enemyHealth = 100;
+	private enemyMana = 100;
+	private pendingDefeat: BattleResult | undefined;
+	private defeatResult: BattleResult | undefined;
+	private conclusionSent = false;
 	private player!: Actor;
+	private damagedPlayer!: Actor;
+	private playerDefeated!: Actor;
 	private enemy!: Actor;
+	private enemyDefeated!: Actor;
 	private projectile!: Actor;
 	private meteor!: Actor;
 	private castGlow!: Actor;
@@ -56,6 +90,7 @@ export class BattleScene extends Scene {
 	private impactGlow!: Actor;
 	private impactCore!: Actor;
 	private damageLabel!: Label;
+	private defeatLabel!: Label;
 	private sceneTint!: Actor;
 	private enemyGroundGlow!: Actor;
 	private enemyCastAura!: Actor;
@@ -70,10 +105,17 @@ export class BattleScene extends Scene {
 	private sparks: Actor[] = [];
 	private meteorSparks: Actor[] = [];
 
-	public constructor(resources: BattleResources, setStatus: (status: string) => void) {
+	public constructor(
+		resources: BattleResources,
+		setStatus: (status: string) => void,
+		setBars: (bars: BattleBars) => void,
+		concludeBattle: (result: BattleResult) => void,
+	) {
 		super();
 		this.resources = resources;
 		this.setStatus = setStatus;
+		this.setBars = setBars;
+		this.concludeBattle = concludeBattle;
 	}
 
 	public handleKey(code: string) {
@@ -104,6 +146,7 @@ export class BattleScene extends Scene {
 	public onInitialize(engine: Engine) {
 		engine.currentScene.camera.pos = BATTLE_CENTER;
 		engine.currentScene.camera.zoom = CAMERA_ZOOM;
+		this.publishBars();
 
 		this.addArena();
 		this.addActors();
@@ -130,6 +173,9 @@ export class BattleScene extends Scene {
 			case 'enemyCharge':
 				this.updateEnemyCharge();
 				break;
+			case 'enemyRelease':
+				this.updateEnemyRelease();
+				break;
 			case 'meteorFall':
 				this.updateMeteorFall();
 				break;
@@ -138,6 +184,9 @@ export class BattleScene extends Scene {
 				break;
 			case 'enemyRecover':
 				this.updateEnemyRecovery();
+				break;
+			case 'defeat':
+				this.updateDefeat();
 				break;
 		}
 	}
@@ -187,12 +236,31 @@ export class BattleScene extends Scene {
 		this.player.scale = vec(PLAYER_SCALE, PLAYER_SCALE);
 		this.add(this.player);
 
+		this.damagedPlayer = new Actor({ pos: PLAYER_POSITION, anchor: vec(0.5, 1), z: 11 });
+		this.damagedPlayer.graphics.use(this.resources.playerDamaged.toSprite());
+		this.damagedPlayer.scale = vec(DAMAGED_PLAYER_SCALE, DAMAGED_PLAYER_SCALE);
+		this.damagedPlayer.graphics.opacity = 0;
+		this.add(this.damagedPlayer);
+
+		this.playerDefeated = new Actor({ pos: PLAYER_POSITION, anchor: vec(0.5, 1), z: 12 });
+		this.playerDefeated.graphics.use(this.resources.playerDefeated.toSprite());
+		this.playerDefeated.scale = vec(0.35, 0.35);
+		this.playerDefeated.graphics.opacity = 0;
+		this.add(this.playerDefeated);
+
 		this.enemy = new Actor({ pos: ENEMY_POSITION, anchor: vec(0.5, 1), z: 9 });
 		this.enemy.graphics.add('idle', this.resources.enemyIdle.toSprite());
-		this.enemy.graphics.add('charge', this.resources.enemyChargeMedium.toSprite());
+		this.enemy.graphics.add('charge', this.resources.enemyLargeCharge.toSprite());
+		this.enemy.graphics.add('release', this.resources.enemyLargeRelease.toSprite());
 		this.enemy.graphics.use('idle');
 		this.enemy.scale = vec(ENEMY_SCALE, ENEMY_SCALE);
 		this.add(this.enemy);
+
+		this.enemyDefeated = new Actor({ pos: ENEMY_POSITION, anchor: vec(0.5, 1), z: 12 });
+		this.enemyDefeated.graphics.use(this.resources.enemyDefeated.toSprite());
+		this.enemyDefeated.scale = vec(0.44, 0.44);
+		this.enemyDefeated.graphics.opacity = 0;
+		this.add(this.enemyDefeated);
 
 		this.projectile = new Actor({ pos: PLAYER_CAST_POINT, anchor: vec(0.5, 0.5), z: 18 });
 		this.projectile.graphics.use(this.resources.playerMediumProjectile.toSprite());
@@ -333,6 +401,22 @@ export class BattleScene extends Scene {
 		this.damageLabel.opacity = 0;
 		this.add(this.damageLabel);
 
+		this.defeatLabel = new Label({
+			text: 'DEFEATED',
+			pos: BATTLE_CENTER,
+			color: Color.fromHex('#fff2e7'),
+			font: new Font({
+				family: 'Georgia',
+				size: 104,
+				unit: FontUnit.Px,
+				textAlign: TextAlign.Center,
+				bold: true,
+			}),
+			z: 30,
+		});
+		this.defeatLabel.opacity = 0;
+		this.add(this.defeatLabel);
+
 		for (let index = 0; index < 8; index += 1) {
 			const spark = this.createCircle(ENEMY_HIT_POINT, 8, new Color(224, 187, 255, 0.9), 19);
 			spark.graphics.opacity = 0;
@@ -358,9 +442,15 @@ export class BattleScene extends Scene {
 			this.setStatus('Medium Attack is already in motion');
 			return;
 		}
+		if (this.playerMana < MEDIUM_ATTACK_COST) {
+			this.setStatus('Not enough mana for Medium Attack');
+			return;
+		}
 
 		this.phase = 'charge';
 		this.phaseElapsed = 0;
+		this.playerMana -= MEDIUM_ATTACK_COST;
+		this.publishBars();
 		this.player.graphics.use('cast');
 		this.setStatus('Medium Attack: channeling arcane energy');
 	}
@@ -433,6 +523,11 @@ export class BattleScene extends Scene {
 		this.damageLabel.text = '25';
 		this.damageLabel.pos = ENEMY_HIT_POINT.add(vec(0, -35));
 		this.damageLabel.opacity = 1;
+		this.enemyHealth = Math.max(0, this.enemyHealth - MEDIUM_ATTACK_COST);
+		this.publishBars();
+		if (this.enemyHealth === 0) {
+			this.pendingDefeat = 'victory';
+		}
 		this.setStatus('Medium Attack hit for 25');
 
 		this.sparks.forEach((spark, index) => {
@@ -467,8 +562,12 @@ export class BattleScene extends Scene {
 				spark.vel = Vector.Zero;
 				spark.graphics.opacity = 0;
 			});
-			this.phase = 'recover';
-			this.phaseElapsed = 0;
+			if (this.pendingDefeat) {
+				this.startDefeat(this.pendingDefeat);
+			} else {
+				this.phase = 'recover';
+				this.phaseElapsed = 0;
+			}
 		}
 	}
 
@@ -490,6 +589,7 @@ export class BattleScene extends Scene {
 		this.phase = 'enemyCharge';
 		this.phaseElapsed = 0;
 		this.enemy.graphics.use('charge');
+		this.enemy.pos = ENEMY_POSITION.add(ENEMY_CHARGE_OFFSET);
 		this.setStatus('Demon turn: summoning meteor');
 	}
 
@@ -497,6 +597,7 @@ export class BattleScene extends Scene {
 		const progress = clamp(this.phaseElapsed / 780, 0, 1);
 		const pulse = 1 + Math.sin(this.phaseElapsed / 58) * 0.09;
 		this.enemy.scale = vec(ENEMY_SCALE * (1 + progress * 0.1), ENEMY_SCALE * (1 + progress * 0.1));
+		this.enemy.pos = ENEMY_POSITION.add(ENEMY_CHARGE_OFFSET);
 		this.enemyGroundGlow.graphics.opacity = progress * 0.9;
 		this.enemyCastAura.scale = vec(pulse * (0.5 + progress * 1.1), pulse * (0.5 + progress * 1.1));
 		this.enemyCastAura.graphics.opacity = progress * 0.85;
@@ -505,8 +606,34 @@ export class BattleScene extends Scene {
 		this.meteorTint.graphics.opacity = progress * 0.34;
 
 		if (progress === 1) {
+			this.phase = 'enemyRelease';
+			this.phaseElapsed = 0;
+			this.enemy.graphics.use('release');
+			this.enemy.pos = ENEMY_POSITION.add(ENEMY_RELEASE_OFFSET);
+			this.enemy.scale = vec(ENEMY_RELEASE_SCALE, ENEMY_RELEASE_SCALE);
+			this.enemyMana = Math.max(0, this.enemyMana - METEOR_ATTACK_COST);
+			this.publishBars();
+			this.setStatus('Demon releases the meteor');
+		}
+	}
+
+	private updateEnemyRelease() {
+		const progress = clamp(this.phaseElapsed / 900, 0, 1);
+		const pulse = 1 + Math.sin(this.phaseElapsed / 42) * 0.08;
+		this.enemy.scale = vec(ENEMY_RELEASE_SCALE * pulse, ENEMY_RELEASE_SCALE * pulse);
+		this.enemy.pos = ENEMY_POSITION.add(ENEMY_RELEASE_OFFSET);
+		this.enemyCastAura.scale = vec(1.1 + pulse * 0.2, 1.1 + pulse * 0.2);
+		this.enemyCastAura.graphics.opacity = 0.8 - progress * 0.35;
+		this.enemyCastGlow.graphics.opacity = 0.88 - progress * 0.35;
+		this.enemyGroundGlow.graphics.opacity = 0.85 - progress * 0.45;
+		this.meteorTint.graphics.opacity = 0.34 + progress * 0.08;
+
+		if (progress === 1) {
 			this.phase = 'meteorFall';
 			this.phaseElapsed = 0;
+			this.enemy.graphics.use('idle');
+			this.enemy.pos = ENEMY_POSITION;
+			this.enemy.scale = vec(ENEMY_SCALE, ENEMY_SCALE);
 			this.meteor.pos = METEOR_START_POSITION;
 			this.meteor.graphics.opacity = 1;
 			this.setStatus('Meteor incoming');
@@ -538,9 +665,17 @@ export class BattleScene extends Scene {
 		this.meteorGroundGlow.graphics.opacity = 1;
 		this.meteorImpactGlow.graphics.opacity = 1;
 		this.meteorImpactCore.graphics.opacity = 1;
+		this.damagedPlayer.pos = PLAYER_POSITION.add(DAMAGED_PLAYER_OFFSET);
+		this.damagedPlayer.scale = vec(DAMAGED_PLAYER_SCALE, DAMAGED_PLAYER_SCALE);
+		this.damagedPlayer.graphics.opacity = 1;
 		this.damageLabel.text = '50';
 		this.damageLabel.pos = PLAYER_METEOR_IMPACT_POINT.add(vec(0, -80));
 		this.damageLabel.opacity = 1;
+		this.playerHealth = Math.max(0, this.playerHealth - METEOR_ATTACK_COST);
+		this.publishBars();
+		if (this.playerHealth === 0) {
+			this.pendingDefeat = 'defeat';
+		}
 		this.setStatus('Meteor impact for 50');
 
 		this.meteorSparks.forEach((spark, index) => {
@@ -562,6 +697,8 @@ export class BattleScene extends Scene {
 		this.meteorImpactCore.graphics.opacity = 1 - progress;
 		this.player.pos = PLAYER_POSITION.add(vec(30 * (1 - progress), 0));
 		this.player.graphics.opacity = progress < 0.25 ? 0.34 : 1;
+		this.damagedPlayer.pos = this.player.pos.add(DAMAGED_PLAYER_OFFSET);
+		this.damagedPlayer.graphics.opacity = 1;
 		this.damageLabel.pos = PLAYER_METEOR_IMPACT_POINT.add(vec(0, -80 - progress * 100));
 		this.damageLabel.opacity = 1 - progress;
 		this.meteorSparks.forEach((spark) => {
@@ -578,30 +715,74 @@ export class BattleScene extends Scene {
 				spark.vel = Vector.Zero;
 				spark.graphics.opacity = 0;
 			});
-			this.phase = 'enemyRecover';
-			this.phaseElapsed = 0;
+			if (this.pendingDefeat) {
+				this.startDefeat(this.pendingDefeat);
+			} else {
+				this.phase = 'enemyRecover';
+				this.phaseElapsed = 0;
+			}
 		}
 	}
 
 	private updateEnemyRecovery() {
-		const progress = clamp(this.phaseElapsed / 520, 0, 1);
+		const recoveryElapsed = Math.max(0, this.phaseElapsed - DAMAGE_HOLD_DURATION);
+		const progress = clamp(recoveryElapsed / DAMAGE_FADE_DURATION, 0, 1);
 		this.enemy.scale = vec(
 			ENEMY_SCALE * (1.1 - progress * 0.1),
 			ENEMY_SCALE * (1.1 - progress * 0.1),
 		);
 		this.player.pos = lerpVector(PLAYER_POSITION.add(vec(4, 0)), PLAYER_POSITION, progress);
+		this.damagedPlayer.pos = this.player.pos.add(DAMAGED_PLAYER_OFFSET);
+		this.damagedPlayer.graphics.opacity = 1 - progress;
 
 		if (progress === 1) {
 			this.enemy.graphics.use('idle');
+			this.player.scale = vec(PLAYER_SCALE, PLAYER_SCALE);
 			this.player.graphics.opacity = 1;
+			this.damagedPlayer.graphics.opacity = 0;
 			this.phase = 'idle';
 			this.phaseElapsed = 0;
 			this.setStatus('Ready: press Right Arrow to cast Medium Attack');
 		}
 	}
 
+	private publishBars() {
+		this.setBars({
+			playerHealth: this.playerHealth,
+			playerMana: this.playerMana,
+			enemyHealth: this.enemyHealth,
+			enemyMana: this.enemyMana,
+		});
+	}
+
+	private startDefeat(result: BattleResult) {
+		this.phase = 'defeat';
+		this.phaseElapsed = 0;
+		this.pendingDefeat = undefined;
+		this.defeatResult = result;
+		this.player.graphics.opacity = result === 'defeat' ? 0 : 1;
+		this.enemy.graphics.opacity = result === 'victory' ? 0 : 1;
+		this.damagedPlayer.graphics.opacity = 0;
+		this.playerDefeated.graphics.opacity = result === 'defeat' ? 1 : 0;
+		this.enemyDefeated.graphics.opacity = result === 'victory' ? 1 : 0;
+		this.defeatLabel.text = result === 'victory' ? 'DEMON DEFEATED' : 'MAGE DEFEATED';
+		this.defeatLabel.color =
+			result === 'victory' ? Color.fromHex('#f4d5ff') : Color.fromHex('#ffd7c2');
+		this.defeatLabel.opacity = 1;
+		this.setStatus(result === 'victory' ? 'Demon defeated' : 'Mage defeated');
+	}
+
+	private updateDefeat() {
+		if (this.phaseElapsed >= DEFEAT_DISPLAY_DURATION && this.defeatResult && !this.conclusionSent) {
+			this.conclusionSent = true;
+			this.concludeBattle(this.defeatResult);
+		}
+	}
+
 	private isDemonTurn() {
-		return ['enemyCharge', 'meteorFall', 'meteorImpact', 'enemyRecover'].includes(this.phase);
+		return ['enemyCharge', 'enemyRelease', 'meteorFall', 'meteorImpact', 'enemyRecover'].includes(
+			this.phase,
+		);
 	}
 
 	private createCircle(position: Vector, radius: number, color: Color, z: number) {

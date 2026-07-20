@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Expedition 33-DN | Run conclusion</title>
+		<meta name="description" content="The conclusion screen for an Expedition 33-DN dungeon run." />
+		<link rel="stylesheet" href="/frontend/styles.css" />
+	</head>
+	<body>
+		<div class="site-shell">
+			<header class="topbar">
+				<a class="brand" href="/" aria-label="Return to Expedition 33-DN home">
+					<span class="brand-mark" aria-hidden="true"><span>33</span></span>
+					<span>Expedition 33-DN</span>
+				</a>
+				<div class="topbar-meta"><span class="signal" aria-hidden="true"></span> Run record</div>
+			</header>
+
+			<main class="result-layout">
+				<section
+					class="result-card"
+					id="pending"
+					data-result="pending"
+					aria-labelledby="result-title"
+				>
+					<div class="result-art result-pending">
+						<div class="result-art-copy">
+							<p class="kicker">Run conclusion / awaiting provider</p>
+							<h1 id="result-title">The rift is still listening.</h1>
+						</div>
+						<img
+							id="result-image"
+							class="result-character"
+							src="/mage%20idle%20left_no_bg.png"
+							alt="Mage waiting in the dungeon"
+						/>
+					</div>
+					<div class="result-body">
+						<div>
+							<h2>Your result is ready to settle.</h2>
+							<p>
+								The battle result is available locally. Contract and provider integrations are still
+								being connected, so this screen is holding the final record safely in place.
+							</p>
+						</div>
+						<div class="result-stats" id="result-stats" aria-label="Pending run details">
+							<div class="stat"><small>State</small><strong>Pending</strong></div>
+							<div class="stat"><small>Chain</small><strong>Sepolia</strong></div>
+						</div>
+						<div class="result-actions">
+							<a class="button" href="/">Return to camp</a>
+							<a class="button secondary" href="/frontend/conclusion.html?result=victory"
+								>Preview victory</a
+							>
+							<a class="button secondary" href="/frontend/conclusion.html?result=defeat"
+								>Preview defeat</a
+							>
+						</div>
+					</div>
+				</section>
+			</main>
+		</div>
+
+		<script>
+			const result = new URLSearchParams(window.location.search).get('result');
+			const copy = {
+				victory: {
+					label: 'Run conclusion / victory',
+					title: 'The rift gives way.',
+					heading: 'You kept the line.',
+					body: 'The demon is down and the sanctum is yours. This placeholder is ready to receive the signed run record once the provider and contract layers are connected.',
+					state: 'Victory',
+					imageAlt: 'Mage standing after a victorious run',
+					className: 'result-victory',
+				},
+				defeat: {
+					label: 'Run conclusion / defeat',
+					title: 'The dark gets a turn.',
+					heading: 'The expedition ends here.',
+					body: 'The demon won this exchange, not the whole expedition. This placeholder will later link the failed run to its provider-backed record and next attempt.',
+					state: 'Defeat',
+					imageAlt: 'Mage waiting after a defeated run',
+					className: 'result-defeat',
+				},
+				pending: {
+					label: 'Run conclusion / awaiting provider',
+					title: 'The rift is still listening.',
+					heading: 'Your result is ready to settle.',
+					body: 'The battle result is available locally. Contract and provider integrations are still being connected, so this screen is holding the final record safely in place.',
+					state: 'Pending',
+					imageAlt: 'Mage waiting for the run record',
+					className: 'result-pending',
+				},
+			};
+			const selected = copy[result] || copy.pending;
+			const card = document.querySelector('.result-card');
+			const art = document.querySelector('.result-art');
+			const kicker = document.querySelector('.result-art-copy .kicker');
+			const title = document.querySelector('#result-title');
+			const heading = document.querySelector('.result-body h2');
+			const body = document.querySelector('.result-body p');
+			const state = document.querySelector('.stat strong');
+			const resultImage = document.querySelector('#result-image');
+			const resultStats = document.querySelector('#result-stats');
+
+			card.classList.remove('result-pending', 'result-victory', 'result-defeat');
+			card.classList.add(selected.className);
+			art.classList.remove('result-pending', 'result-victory', 'result-defeat');
+			art.classList.add(selected.className);
+			kicker.textContent = selected.label;
+			title.textContent = selected.title;
+			heading.textContent = selected.heading;
+			body.textContent = selected.body;
+			state.textContent = selected.state;
+			resultImage.alt = selected.imageAlt;
+			resultStats.setAttribute('aria-label', `${selected.state} run details`);
+			document.title = `Expedition 33-DN | ${selected.state}`;
+		</script>
+	</body>
+</html>

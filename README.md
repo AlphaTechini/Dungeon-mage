@@ -21,6 +21,10 @@ Open the local URL printed by Vite, then press the Right Arrow to play the Versi
 - [JavaScript game libraries](research/javascript-game-libraries.md) - Comparison of browser game-engine options.
 - [Game assets and environment](research/game-assets-and-environment.md) - Character and arena production pipeline.
 - [Application source](src/README.md) - SvelteKit route and local Excalibur battle scene.
+- [Web3 session demo](src/routes/web3/README.md) - Isolated Magic, ZeroDev, and Arbitrum Sepolia flow.
+- [Arbitrum contracts](contracts/README.md) - Native test-ETH match spending and settlement contract.
+- [Static frontend pages](assets/frontend/README.md) - Isolated landing and reusable conclusion pages.
 - [Game assets](assets/README.md) - Browser-ready arena, mage, and spell files.
+- [Project constraints](.agents/README.md) - Confirmed implementation and dependency decisions.
 - [Pitch PDF](pitch.pdf) - Product narrative, sponsor positioning, and source links.
 - [Session Zero build guide](session_zero_tools_guide.pdf) - Supplied tool, architecture, and build-order guide.

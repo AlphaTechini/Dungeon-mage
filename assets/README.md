@@ -6,6 +6,8 @@ This directory is the SvelteKit public asset root. Files in this directory are a
 
 The current files are browser-ready PNGs. Character and spell files use RGBA transparency; the arena background remains an opaque 1672x941 image. Runtime code reads these files only and never modifies them.
 
+The automatic demon turn uses `enemy large att charge_no_bg.png`, `enemy release large att-no-bg.png`, `transparent meteor.png`, and `mage damaged by att.png` in that order.
+
 ## Logic Map
 
 To find the semantic mapping from these filenames to the game scene visit [resources.ts](file:///C:/game-hackathons/Expedition%2033-DN/src/lib/game/resources.ts).

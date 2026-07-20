@@ -12,13 +12,17 @@ Use PNG for transparent final assets first. WebP may be added after image qualit
 
 ## Current Version 1 Asset Map
 
-| Runtime key              | Current file                | Purpose                        |
-| ------------------------ | --------------------------- | ------------------------------ |
-| `arena`                  | `background(dungeon).png`   | Fixed opaque arena background  |
-| `playerIdle`             | `mage idle left_no_bg.png`  | Purple player resting pose     |
-| `playerCast`             | `mage wand cast_no_bg.png`  | Purple player medium-cast pose |
-| `playerMediumProjectile` | `Mage medium att_no_bg.png` | Left-to-right purple spell     |
-| `enemyIdle`              | `enemy idle_no_bg.png`      | Red enemy resting pose         |
+| Runtime key              | Current file                        | Purpose                            |
+| ------------------------ | ----------------------------------- | ---------------------------------- |
+| `arena`                  | `background(dungeon).png`           | Fixed opaque arena background      |
+| `playerIdle`             | `mage idle left_no_bg.png`          | Purple player resting pose         |
+| `playerDamaged`          | `mage damaged by att.png`           | Purple player meteor-impact pose   |
+| `playerCast`             | `mage wand cast_no_bg.png`          | Purple player medium-cast pose     |
+| `playerMediumProjectile` | `Mage medium att_no_bg.png`         | Left-to-right purple spell         |
+| `enemyIdle`              | `enemy idle_no_bg.png`              | Red enemy resting pose             |
+| `enemyLargeCharge`       | `enemy large att charge_no_bg.png`  | Red demon heavy-attack charge pose |
+| `enemyLargeRelease`      | `enemy release large att-no-bg.png` | Red demon meteor release pose      |
+| `meteor`                 | `transparent meteor.png`            | Meteor falling from above          |
 
 All character and spell files in the current map are 32-bit RGBA PNGs. The arena background is 24-bit RGB because it fills the whole canvas.
 

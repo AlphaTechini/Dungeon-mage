@@ -1,6 +1,4 @@
-overrides:
-  cookie: 0.7.0
-onlyBuiltDependencies:
-  - esbuild
 allowBuilds:
   esbuild: true
+overrides:
+  bn.js: 4.12.3

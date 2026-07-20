@@ -13,6 +13,8 @@ The purpose is to approve the rendering direction locally before adding game rul
 - Arena: one fixed combat scene.
 - Actors: one player mage and one enemy mage.
 - Primary cinematic event: player medium cast, left-to-right projectile, enemy recoil, 25 damage display, then an automatic demon meteor counterattack for 50 damage.
+- Resources: both combatants begin at 100 health and 100 mana. The implemented medium attack spends 25 player mana, while the meteor spends 50 demon mana.
+- Defeat: zero health displays the relevant defeated art and result text before opening the supplied conclusion page.
 - UI boundary: SvelteKit HTML UI above the game canvas.
 - Blockchain boundary: no blockchain work in this iteration.
 - Canvas: responsive 16:9 presentation with a native 1672x941 arena render size.
@@ -24,7 +26,7 @@ The purpose is to approve the rendering direction locally before adding game rul
 These inputs are required before the project can build the actual first gameplay loop:
 
 - Turn order and timing.
-- Health, mana, and shield values.
+- Shield values and defense behavior.
 - Exact attack list and defense rules.
 - Whether separate close-up angle assets will be available.
 

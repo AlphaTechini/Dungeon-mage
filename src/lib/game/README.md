@@ -4,7 +4,7 @@ This directory contains the Version 1 Excalibur scene. It has no wallet, server,
 
 ## Decisions
 
-The engine renders at the arena image's native 1672x941 resolution. CSS scales the canvas into an aspect-ratio-preserving full-browser frame. The engine is fixed at 60 FPS and a 1x pixel ratio so high-DPI displays do not multiply the render workload. The battle scene uses a deterministic visual-state sequence: player medium attack, then demon meteor counterattack, then input unlock. Future combat rules can select a sequence without entering the render loop.
+The engine renders at the arena image's native 1672x941 resolution. CSS scales the canvas into an aspect-ratio-preserving full-browser frame. The engine is fixed at 60 FPS and a 1x pixel ratio so high-DPI displays do not multiply the render workload. The battle scene owns local health and mana values, publishes them to the Svelte HUD, and opens the conclusion page after a defeated-art result beat. The sequence remains local and deterministic, so later combat rules can replace fixed costs and damage without entering the render loop.
 
 ## Logic Map
 
